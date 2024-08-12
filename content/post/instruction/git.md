@@ -27,3 +27,7 @@ categories:
     git log //查看各提交版本  
     git reset [head~n/commit ID] --soft/hard  //回退n个版本/回退到ID表示的版本  
 >详细见：<https://www.bilibili.com/video/BV14C4y1q78x>
+
+### gitignore失效
+使用git rm (-r) --cached file_path移除与缓存的连接
+>[失效解决方法]<https://www.cnblogs.com/goloving/p/15017769.html>
