@@ -22,7 +22,7 @@ languages:
             description: Example description
     zh-cn:
         languageName: 中文
-        title: 演示站点
+        title: 答案说明所有
         weight: 2
         params:
             description: 演示说明
@@ -162,10 +162,10 @@ params:
                   limit: 5
             - type: categories
               params:
-                  limit: 10
-            - type: tag-cloud
-              params:
-                  limit: 10
+                  limit: 8
+            # - type: tag-cloud
+            #   params:
+            #       limit: 10
         page:
             - type: toc
 
@@ -205,7 +205,7 @@ menu:
     social:
         - identifier: github
           name: GitHub
-          url: https://github.com/CaiJimmy/hugo-theme-stack
+          url: https://github.com/hych0317/hugoweb_auto
           params:
               icon: brand-github
 
