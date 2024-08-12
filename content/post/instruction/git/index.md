@@ -1,6 +1,6 @@
 ---
 title: 'Git'
-date: 2024-08-12T18:34:30+08:00
+date: 2024-08-12T18:36:30+08:00
 draft: false
 categories:
     - 指令
@@ -8,7 +8,7 @@ categories:
 ---
 
 
-## git指令
+# git指令
 
 ### 初始化
     git init  

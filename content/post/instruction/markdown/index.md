@@ -1,13 +1,13 @@
 ---
 title: 'Markdown'
-date: 2024-08-12T14:34:30+08:00
+date: 2024-08-12T14:36:30+08:00
 draft: false
 categories:
     - 指令
 
 ---
 
-## Markdown常用语法
+# Markdown常用语法
 >官方语法教程：<https://markdown.com.cn/basic-syntax/>  
 
 
