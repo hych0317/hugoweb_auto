@@ -1,5 +1,5 @@
 ---
-title: 'Markdown2'
+title: 'Git'
 date: 2024-08-12T14:34:30+08:00
 draft: false
 categories:
@@ -7,50 +7,27 @@ categories:
 
 ---
 
-## Markdown2常用语法
->官方语法教程：<https://markdown.com.cn/basic-syntax/>  
 
+## git指令
 
-### 标题：  
-（#）数量代表几级标题，数量越小字体越大
+### 初始化
+    git init  
+    git add .  
+    git commit -m "first commit"  
+    git branch -M main  
+    git remote add origin {你的github仓库地址}  
+    git push -u origin main
 
-### 段落：
-使用空白行分割文本，例如：
+### 后续上传
+    git add .  
+    git commit  
+    git push //若要无视pull则添加(--force)
 
-此时文本被分段。（注意：段落的首行均不可缩进，以免导致编译错误；分段与换行不同）
+### 版本回退
+    git log //查看各提交版本  
+    git reset [head~n/commit ID] --soft/hard  //回退n个版本/回退到ID表示的版本  
+>详细见：<https://www.bilibili.com/video/BV14C4y1q78x>
 
-### 换行：
-不是简单的回车，应在一行的末尾添加两个或多个空格，然后再按回车键(或者使用<br>)。
-
-### 强调：
-加粗两边用两个星号（**粗体**）  
-加斜两边用一个星号（*斜体*）
-
-### 引用：
-使用>号，使用>>可以嵌套引用
-
-### 列表：
-使用1. 2. 3.进行有序列表  
-使用星号，破折号-进行无序列表  
-在列表中缩进tab可以嵌套包括列表项的其它元素，如：
-* 一
-* 二
-    * 嵌套1
-    * 嵌套2
-* 三
-    >引用1
-* 四
-
-### 代码块
-将代码块缩进tab
-
-### 图片
-    ![描述](路径 "可选title")
-![example](post/instruction/als.png)  
-给图片添加链接  
-
-    [![描述](路径)](链接) //图片链接
-
-### 链接
-    [描述](<网址>) //网址间空格应使用%20替换
-<>使得网址可点击
+### gitignore失效
+使用git rm (-r) --cached file_path移除与缓存的连接
+>[失效解决方法]<https://www.cnblogs.com/goloving/p/15017769.html>
