@@ -7,36 +7,12 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>ychuang</copyright>
-        <lastBuildDate>Mon, 11 Mar 2019 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/hugoweb_auto/tags/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>Css</title>
-        <link>http://localhost:1313/hugoweb_auto/tags/css/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/hugoweb_auto/tags/css/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Html</title>
-        <link>http://localhost:1313/hugoweb_auto/tags/html/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/hugoweb_auto/tags/html/</guid>
-        <description></description>
-        </item>
-        <item>
+        <lastBuildDate>Sat, 09 Mar 2019 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/hugoweb_auto/tags/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Markdown</title>
         <link>http://localhost:1313/hugoweb_auto/tags/markdown/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
+        <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
         
         <guid>http://localhost:1313/hugoweb_auto/tags/markdown/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Themes</title>
-        <link>http://localhost:1313/hugoweb_auto/tags/themes/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/hugoweb_auto/tags/themes/</guid>
         <description></description>
         </item>
         <item>
@@ -53,14 +29,6 @@
         <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
         
         <guid>http://localhost:1313/hugoweb_auto/tags/text/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Emoji</title>
-        <link>http://localhost:1313/hugoweb_auto/tags/emoji/</link>
-        <pubDate>Tue, 05 Mar 2019 00:00:00 +0000</pubDate>
-        
-        <guid>http://localhost:1313/hugoweb_auto/tags/emoji/</guid>
         <description></description>
         </item>
         
