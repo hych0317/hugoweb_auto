@@ -1,8 +1,8 @@
 ---
 title: Chinese Test1
-description: 这是一个副标题
-date: 2020-09-09
-slug: test1-chinese
+description: 副标题
+date: 2020-09-10
+slug: test-chinese
 image: helena-hertz-wWZzXlDpMog-unsplash.jpg
 categories:
     - Test
