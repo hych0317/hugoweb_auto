@@ -3,7 +3,7 @@ title: 'Git'
 date: 2024-08-12T18:36:30+08:00
 draft: false
 categories:
-    - 指令
+    - 指令语法
 
 ---
 

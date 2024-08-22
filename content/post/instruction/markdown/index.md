@@ -3,7 +3,7 @@ title: 'Markdown'
 date: 2024-08-12T14:36:30+08:00
 draft: false
 categories:
-    - 指令
+    - 指令语法
 
 ---
 
