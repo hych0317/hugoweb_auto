@@ -22,7 +22,7 @@ categories:
     git add .  
     git commit  
     git push //若要无视pull则添加(--force)
-
+第一行将修改同步至本地缓存区，第二行将缓存区的修改提交至本地仓库，第三行将本地仓库的修改推送至远端仓库。
 ### 分支
 #### 建立分支
     git checkout -b [branchname] //git 切换分支 建立并切换至新分支 新分支名
