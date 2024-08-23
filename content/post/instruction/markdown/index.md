@@ -42,7 +42,21 @@ categories:
 * 四
 
 ### 代码块
-将代码块缩进tab
+1. 缩进tab表示代码块
+2. 代码块前后分别用三个反引号```表示，同时可以使用语言标识符指定代码类型，如：
+```python（或yaml、json等）
+print("Hello, world!")
+```
+```yaml
+links:
+  - title: My GitHub
+    description: GitHub is the world's largest software development platform.
+    website: https://github.com
+    image: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+```
+这样可以使用复制粘贴代码块功能，并能高亮显示代码类型。
+
+
 
 ### 图片
     ![描述](路径 "可选title")

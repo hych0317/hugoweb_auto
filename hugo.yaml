@@ -44,7 +44,8 @@ params:
         - post
     featuredImageField: image
     rssFullContent: true
-    favicon: /post/icon.ico
+    favicon: https://github.com/hych0317/hugoweb_auto/blob/main/assets/icon.ico
+    # /icon.ico
     # e.g.: favicon placed in `static/favicon.ico` of your site folder, then set this field to `/favicon.ico` (`/` is necessary)
 
     footer:

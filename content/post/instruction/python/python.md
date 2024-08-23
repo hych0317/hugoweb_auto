@@ -12,13 +12,13 @@ categories = ['指令语法']
 *args 允许你将任意数量的非关键字参数传递给一个函数。这些参数会以一个元组的形式传递给函数。
 
 **kwargs 允许你将任意数量的关键字参数传递给一个函数。这些参数会以一个字典的形式传递给函数。
-
+```python
     def my_function(*args, **kwargs):
         print("args:", args)
         print("kwargs:", kwargs)
 
     my_function(1, 2, 3, name="Alice", age=30)
-
+```
 ### 数据类型
 不可变数据（3 个）：Number（数字）、String（字符串）、Tuple（元组）；  
 可变数据（3 个）：List（列表）、Dictionary（字典）、Set（集合）。
@@ -86,22 +86,22 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
     
     >如 r"this is a line with \n" 则 \n 会显示，并不是换行。
 * Python 中的字符串有两种索引方式，从左往右以 0 开始，从右往左以 -1 开始<br>
- 
-        str='123456789'
+```python
+    str='123456789'
 
-        print(str[0:-1])           # 输出第一个到倒数第二个的所有字符
-        print(str[2:])             # 输出从第三个开始后的所有字符
-        print(str[1:5:2])          # 输出从第二个开始到第五个且每隔一个的字符（步长为2）
-        print(str * 2)             # 输出字符串两次
-        print ("我叫%s今年 %d 岁!" % ('小明', 10))
-                                   # 格式化输出字符串
-
+    print(str[0:-1])           # 输出第一个到倒数第二个的所有字符
+    print(str[2:])             # 输出从第三个开始后的所有字符
+    print(str[1:5:2])          # 输出从第二个开始到第五个且每隔一个的字符（步长为2）
+    print(str * 2)             # 输出字符串两次
+    print ("我叫%s今年 %d 岁!" % ('小明', 10))
+                            # 格式化输出字符串
+```
 ##### f-string
-    >f'{1+2}'         # 使用表达式
+    >>>f'{1+2}'         # 使用表达式
     '3'
 
     w = {'name': 'Runoob', 'url': 'www.runoob.com'}
-    > f'{w["name"]}: {w["url"]}'
+    >>>f'{w["name"]}: {w["url"]}'
     'Runoob: www.runoob.com'
 ##### 转义字符
 |转义字符|含义|
@@ -125,13 +125,14 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
 * 列表可以嵌套列表。   
 * 列表可以当作栈、队列、集合使用，特别是pop和append方法。  
 ![example](post/instruction/python/list1.png)  
+```python
     list.append(obj)    # 在列表末尾添加新的对象
     list.extend(seq)     # 在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
     list.remove(obj)     # 删除列表中某个值的第一个匹配项
     del list[index]      # 删除指定索引的元素
     list.pop(n)        # 从列表中删除某个元素（默认最后一个元素），并且返回该元素的值
     list.reverse()      # 反转列表
-
+```
 
 
 #### 字典
@@ -143,7 +144,7 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
 * 值(value)可以是任意类型，包括列表甚至另一个字典？。<br>  
 
 ##### 访问字典的值  
-
+```python
     dictexp = {}
     dictexp['one'] = "1 - 菜鸟教程"
     dictexp[2]     = "2 - 菜鸟工具"
@@ -153,13 +154,16 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
     print (dictexp)              # 输出完整的字典
     print (dictexp.keys())       # 输出所有键
     print (dictexp.values())     # 输出所有值
+```
 ##### 字典内置函数
+```python
     len(dictexp)      #计算字典元素个数  
     str(dictexp)      #输出字典可打印的字符串表示  
+```
 ##### 字典嵌套
 例子中，键'class'的值是子字典。  
 操作上实际就是多级索引。
-
+```python
     dictexp = {'name': 'runoob', 'age': 7, 'class': {'name': '101', 'teacher': 'teacher1'}}
 
     # 访问 'class' 对应子字典中的键 'name' 的值
@@ -173,7 +177,7 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
         if type(value) == dict:
             for k, v in value.items():
                 print(f"subdict key:{k}", f"subdict value:{v}")
-
+```
 
 #### 集合
 **注意与字典的区别**  
@@ -235,7 +239,7 @@ Python中有两种循环语句，一种是for...in循环，另一种是while循�
 #### 推导式
 推导式是一种根据已有列表、字典等创建新数据序列的简洁方式，同时可以对原序列进行过滤、排序等操作。  
 语法格式如下：  
-
+```python
     # 生成器表达式
     (<表达式> for <变量> in <序列> if <条件>)
     #eg:
@@ -257,6 +261,7 @@ Python中有两种循环语句，一种是for...in循环，另一种是while循�
     new_d = {k:v for k,v in d.items() if v>1}
     print(new_d)
     # 输出结果：{'b': 2, 'c': 3}
+```
 #### 函数
 ##### 默认参数
     def function_name(parameter1, parameter2=default_value):
@@ -287,7 +292,7 @@ lambda 函数通常用于编写简单的、单行的函数，通常在需要函�
 
     lambda arguments: expression
 示例：  
-
+```python
     # 示例1
     x = lambda a, b : a * b
     print(x(5, 6))  # 输出：30
@@ -296,7 +301,7 @@ lambda 函数通常用于编写简单的、单行的函数，通常在需要函�
     numbers = [1, 2, 3, 4, 5, 6, 7, 8]
     even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
     print(even_numbers)  # 输出：[2, 4, 6, 8]
-
+```
 
 ### 功能模块
 #### 迭代器(iterator)
@@ -307,7 +312,7 @@ lambda 函数通常用于编写简单的、单行的函数，通常在需要函�
 Python的迭代器有两个基本的方法：iter() 和 next()。  
 
 示例：  
-
+```python
     list=[1,2,3,4]
     it = iter(list)    # 创建迭代器对象
     # 使用next()函数获取迭代器中下一个元素
@@ -323,11 +328,12 @@ Python的迭代器有两个基本的方法：iter() 和 next()。
         print (x, end=" ")
     
     # 三种方法结果都是1 2 3 4
+```
 **客制化生成：**
 如果要创建自己的迭代器，需要定义一个类，并实现私有的iter()和next()方法。
 
 示例：  
-
+```python
     class MyNumbers:
     def __iter__(self): # 类私有方法，返回一个特殊的迭代器对象
         self.a = 1
@@ -346,24 +352,26 @@ Python的迭代器有两个基本的方法：iter() 和 next()。
     
     for x in myiter:
     print(x)
+```
 #### 生成器(generator)[更简便更常用，当正常函数写]
 生成器本质上是一种特殊的迭代器(**使用yeild语句**)，可以在迭代过程中逐步产生值，而不是一次性返回所有结果。  
 
 * 简单地讲，yield 的作用就是把一个函数变成一个 generator，带有 yield 的函数不再是一个普通函数，Python 解释器会将其视为一个 generator，调用 function(var) 不会执行该函数，而是返回一个 iterable 对象。
 * 当在生成器函数中使用 yield 语句时，函数的执行将会暂停。yield 对应的值在函数被调用时不会立刻返回，而是调用next方法时才返回。
 * 然后，每次调用生成器的 next() 方法或使用 for 循环进行迭代时，函数会从**上次暂停的地方**继续执行，直到再次遇到 yield 语句。
+```python
+    def countdown(n):
+        while n > 0:
+            yield n
+            n -= 1
+    
+    # 创建生成器对象
+    generator = countdown(5)
 
-        def countdown(n):
-            while n > 0:
-                yield n
-                n -= 1
-        
-        # 创建生成器对象
-        generator = countdown(5)
-
-        # 使用 for 循环迭代生成器/也可以使用next()方法
-        for value in generator:
-            print(value)  # 输出:5 4 3 2 1
+    # 使用 for 循环迭代生成器/也可以使用next()方法
+    for value in generator:
+        print(value)  # 输出:5 4 3 2 1
+```
 #### 装饰器
 装饰器本质上是一个函数，它接收一个函数作为参数并返回一个新的函数。这个新函数是对原函数的一种包装或增强，可以在不改变原函数代码的前提下，增加额外的功能。
 
@@ -380,7 +388,7 @@ Python 还提供了一些内置的装饰器，比如 @staticmethod 和 @classmet
 因此调用被装饰函数时，实际上是调用了包装函数。
 
 ##### 装饰器语法格式：
-
+```python
     # 这是装饰器函数，参数 func 传入被装饰的函数
     def logger(func):
         def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
@@ -396,12 +404,13 @@ Python 还提供了一些内置的装饰器，比如 @staticmethod 和 @classmet
         print('{} + {} = {}'.format(x, y, x+y))
 
     add(2, 3)
+```
 
 ##### 带参数的装饰器语法格式：需要两层嵌套
 因为装饰器函数的参数只有func(被装饰函数)，所以无法直接传入参数，需要额外嵌套一层。
 
 示例一：
-
+```python
     def repeat(n): # 传入装饰器参数
         def decorator(func):
             def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
@@ -416,8 +425,9 @@ Python 还提供了一些内置的装饰器，比如 @staticmethod 和 @classmet
         print(f"Hello, {name}!")
 
     greet("Alice")
+```
 示例二：
-
+```python
     def say_hello(country): # 传入装饰器参数
         def deco(func):
             def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
@@ -445,7 +455,7 @@ Python 还提供了一些内置的装饰器，比如 @staticmethod 和 @classmet
     xiaoming()
     print("------------")
     jack()
-
+```
 
 ### 异常处理
 Python的异常处理机制非常灵活，可以处理多种类型的异常。
@@ -470,7 +480,7 @@ raise语句用于手动抛出异常，并通知调用者发生了什么异常。
 
     raise [Exception [, args [, traceback]]]
 示例：  
-
+```python
     x=10
     try:
         if x>5:
@@ -480,12 +490,12 @@ raise语句用于手动抛出异常，并通知调用者发生了什么异常。
         raise # 不提供Exception参数，则重新抛出当前异常，程序中断于此。若删去该行，仍会执行下面语句输出y的值。
     y=6
     print(y)
-
+```
 #### 用户自定义异常
 用户自定义异常类需要继承自Exception类。
 
 示例：  
-
+```python
     class MyError(Exception):
         def __init__(self, value): # 覆盖类Exception的__init__方法
             self.value = value
@@ -496,14 +506,15 @@ raise语句用于手动抛出异常，并通知调用者发生了什么异常。
         raise MyError(2*2)
     except MyError as e:
         print('My exception occurred, value:', e.value)
-
+```
 #### with语句进行预定义的清理
 一些对象定义了标准的清理行为，无论系统是否成功的使用了它，一旦不需要它了，那么这个标准的清理行为就会执行。
 关键词 with 语句就可以保证诸如文件之类的对象在使用完之后一定会正确的执行它的清理方法:
-
+```python
     with open("myfile.txt") as f:
         for line in f:
             print(line, end="")
+```
 以上这段代码执行完毕后，就算在处理过程中出问题了，文件 f 总是会关闭。        
 
 补充：with 语句的语法格式如下：
@@ -521,6 +532,7 @@ expression 是一个**上下文管理器对象**，它定义了该对象的上�
 #### self参数
 self表示类的实例（对象）自身，通过self参数将类的实例传入类的方法中，使得类的方法能够访问和操作**所创建的各个实例**的属性。
 ##### 示例一：
+```python
     class MyClass:
         def __init__(self, value):
             self.value = value
@@ -534,8 +546,9 @@ self表示类的实例（对象）自身，通过self参数将类的实例传入
     # 调用实例的方法
     obj.display_value() # 输出 42
     obj2.display_value() # 输出 25
-
+```
 ##### 示例二：查看self实例位置
+```python
     class Desc:
         def __get__(self, ins, cls):
             print(self, ins, cls) # self参数为Desc类的实例，ins参数为Test类的实例，cls参数为Test类本身。
@@ -559,9 +572,10 @@ self表示类的实例（对象）自身，通过self参数将类的实例传入
     # 说明：
     # 1. 实例化Test类时，t0和t1传入的self参数分别对应Test类的两个实例。
     # 2. Test类中的x = Desc()语句与self参数无关，因此不论是t0.x还是t1.x或Test.x，x都指向同一个Desc类的实例，即x是类Test的类属性。
-
+```
 
 #### 类的继承
+
     class DerivedClassName(Base1, Base2, Base3):
         <statement-1>
         .
@@ -575,7 +589,7 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
 父类可以从别的文件import。
 
 ##### 示例：
-
+```python
     class people:
         # 定义构造方法
         def __init__(self, n, a):
@@ -600,7 +614,7 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
     s0.speak()
     s1.speak()
     # 输出：父类s0 说: 我 18 岁。 子类s1 说: 我 10 岁了，我在读 3 年级
-
+```
 #### 类的方法种类
 静态方法: 用 @staticmethod 装饰的不带 self 参数的方法叫做静态方法，类的静态方法可以没有参数，可以直接使用类名调用。
 
@@ -660,14 +674,15 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
 - maxsplit：用于 re.split() 方法，表示最多分割次数。
 
 示例1：
-
+```python
     import re
     pattern = re.compile(r'([a-z]+) ([a-z]+) ([a-z]+)', re.I)   # re.I 表示忽略大小写
     # 匹配三个单词的组合
     m = pattern.search('Hello World Wide Web')
     print(m.groups())
+```
 示例2：re.sub()方法，repl参数是一个函数
-
+```python
     import re
     
     # 将匹配的数字乘以 2
@@ -679,7 +694,7 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
     print(re.sub('(?P<value0>\d+)', double, s))  
     # (?P<name>...)：这是命名捕获组的语法。name 是指定的组名，... 是要捕获的正则表达式模式。
     # 此处即捕获由数字组成的字符串组value0，传递至double()函数
-
+```
 ### 匹配规则
 #### 字符和分组
     .：匹配除换行符外任意字符。
@@ -745,7 +760,7 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
     # (?:www\.)是非捕获组，只用于分组而不捕获，配合其后的问号，(?:www\.)?表示www.可选。
     # [a-zA-Z0-9./?=&_-]+匹配方括号中任意字符一次或多次
 示例：
-
+```python
     import re
 
     pattern_mail=re.compile('[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
@@ -755,7 +770,7 @@ Python支持多继承(并行继承、多重继承都可以)，一个类可以从
     
     s = 'self表示类的实例（对象）自身，通过self参数ychuang317@163.com将类的实例传入+86-13706811848类的方法中，使得类的方法能255.255.255.0够访问和操作http://hych0317.github.io/hugoweb_auto所创建的各个实例的属性。'
     print(re.search(pattern_num, s).group(0))
-
+```
 ## Python Requests
 python的requests模块可以用来发送HTTP请求，它可以自动处理cookie、认证、重定向、超时等问题。
 
@@ -775,7 +790,7 @@ data参数用于发送表单数据，json参数用于发送JSON数据。args为�
 ![请求内容](post/instruction/python/request.png)  
 ![请求方法](post/instruction/python/request_method.png)  
 示例：
-
+```python
     import requests
 
     # GET请求
@@ -803,7 +818,7 @@ data参数用于发送表单数据，json参数用于发送JSON数据。args为�
     # 超时设置
     response = requests.get('https://www.google.com', timeout=5)
     print(response.text)  # 输出响应内容
-
+```
 ### 进阶用法
 
 #### 身份认证
@@ -830,151 +845,154 @@ socket使主机间或者一台计算机上的进程间可以通讯。
 #### 示例一：
 1. 服务器端： 
 server.py
-
-        import socket
-        import time
-        COD = 'utf-8'
-        HOST = socket.gethostname()# 获取本地主机ip
-        PORT = 21566 # 软件端口号
-        BUFSIZ = 1024
-        ADDR = (HOST, PORT)
-        SIZE = 10
-        tcpS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 创建socket对象
-        tcpS.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) # 加入socket配置，重用ip和端口
-        tcpS.bind(ADDR) # 绑定ip和端口号到套接字
-        tcpS.listen(SIZE)  # 监听链接，设置最大链接数
+```python
+    import socket
+    import time
+    COD = 'utf-8'
+    HOST = socket.gethostname()# 获取本地主机ip
+    PORT = 21566 # 软件端口号
+    BUFSIZ = 1024
+    ADDR = (HOST, PORT)
+    SIZE = 10
+    tcpS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 创建socket对象
+    tcpS.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) # 加入socket配置，重用ip和端口
+    tcpS.bind(ADDR) # 绑定ip和端口号到套接字
+    tcpS.listen(SIZE)  # 监听链接，设置最大链接数
+    while True:
+        print("服务器启动，监听客户端链接")
+        conn, addr = tcpS.accept()# 建立客户端链接
+        print("链接的客户端", addr)
         while True:
-            print("服务器启动，监听客户端链接")
-            conn, addr = tcpS.accept()# 建立客户端链接
-            print("链接的客户端", addr)
-            while True:
-                try:
-                    data = conn.recv(BUFSIZ) # 读取已链接客户的发送的消息
-                except Exception:
-                    print("断开的客户端", addr)
-                    break
-                print("客户端发送的内容:",data.decode(COD))
-                if not data:
-                    break
-                msg = time.strftime("%Y-%m-%d %X") # 获取结构化事件戳
-                msg1 = '已接收到[%s]的内容:%s' % (msg, data.decode(COD))
-                conn.send(msg1.encode(COD)) # 发送消息给已链接客户端
-            conn.close() # 关闭客户端链接
-        tcpS.closel()
+            try:
+                data = conn.recv(BUFSIZ) # 读取已链接客户的发送的消息
+            except Exception:
+                print("断开的客户端", addr)
+                break
+            print("客户端发送的内容:",data.decode(COD))
+            if not data:
+                break
+            msg = time.strftime("%Y-%m-%d %X") # 获取结构化事件戳
+            msg1 = '已接收到[%s]的内容:%s' % (msg, data.decode(COD))
+            conn.send(msg1.encode(COD)) # 发送消息给已链接客户端
+        conn.close() # 关闭客户端链接
+    tcpS.closel()
+```
 2. 客户端：
 client.py  
-
-        import socket
-        import time
-        HOST = socket.gethostname()# 获取本地主机ip
-        PORT = 21566 # 服务端端口号
-        BUFSIZ = 1024
-        ADDR = (HOST, PORT)
-        tcpCliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 创建socket对象
-        tcpCliSock.connect(ADDR) # 连接服务器
-        while True:
-            data = input('>>').strip()
-            if not data:
-                break
-            tcpCliSock.send(data.encode('utf-8')) # 发送消息
-            data = tcpCliSock.recv(BUFSIZ) # 读取消息
-            if not data:
-                break
-            print(data.decode('utf-8'))
-        tcpCliSock.close() # 关闭客户端
+```python
+    import socket
+    import time
+    HOST = socket.gethostname()# 获取本地主机ip
+    PORT = 21566 # 服务端端口号
+    BUFSIZ = 1024
+    ADDR = (HOST, PORT)
+    tcpCliSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # 创建socket对象
+    tcpCliSock.connect(ADDR) # 连接服务器
+    while True:
+        data = input('>>').strip()
+        if not data:
+            break
+        tcpCliSock.send(data.encode('utf-8')) # 发送消息
+        data = tcpCliSock.recv(BUFSIZ) # 读取消息
+        if not data:
+            break
+        print(data.decode('utf-8'))
+    tcpCliSock.close() # 关闭客户端
+```
 #### 示例二：
 抄送、密送聊天室程序：  
 1. 服务器端： 
 server.py
+```python
+    import socket
+    import threading
 
-        import socket
-        import threading
+    # 客户端地址 名称
+    addr_name = {}
+    # 所有客户端
+    all_clients = []
+    # 名称 客户端
+    name_client = {}
 
-        # 客户端地址 名称
-        addr_name = {}
-        # 所有客户端
-        all_clients = []
-        # 名称 客户端
-        name_client = {}
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = socket.gethostname()
+    port = 9999
+    server.bind((host, port))
+    server.listen(5)
+    lock = threading.Lock()
+    print("开启聊天室")
 
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = socket.gethostname()
-        port = 9999
-        server.bind((host, port))
-        server.listen(5)
-        lock = threading.Lock()
-        print("开启聊天室")
+    def handle_sock(sock, addr):
+        while True:
+            try:
+                data = sock.recv(1024)
+                msg = data.decode("utf-8")
+                print("send msg")
+                from_name = addr_name[str(addr)]
+                if msg.startswith('@'):
+                    index = msg.index(' ')
+                    # 私聊人
+                    to_name = msg[1:index]
+                    # 接收者客户端
+                    to_sock = name_client[to_name]
+                    # 发送的消息
+                    to_msg = msg[index:]
+                    send_one(to_sock, addr, from_name + ":" + to_msg)
+                else:
+                    # 群发消息
+                    send_all(all_clients, addr, from_name + ":" + msg)
+            except ConnectionResetError:
+                exit_name = addr_name[str(addr)]
+                exit_client = name_client[exit_name]
+                all_clients.remove(exit_client)
+                msg = exit_name + " 退出了群聊"
+                send_all(all_clients, addr, msg)
+                break
 
-        def handle_sock(sock, addr):
-            while True:
-                try:
-                    data = sock.recv(1024)
-                    msg = data.decode("utf-8")
-                    print("send msg")
-                    from_name = addr_name[str(addr)]
-                    if msg.startswith('@'):
-                        index = msg.index(' ')
-                        # 私聊人
-                        to_name = msg[1:index]
-                        # 接收者客户端
-                        to_sock = name_client[to_name]
-                        # 发送的消息
-                        to_msg = msg[index:]
-                        send_one(to_sock, addr, from_name + ":" + to_msg)
-                    else:
-                        # 群发消息
-                        send_all(all_clients, addr, from_name + ":" + msg)
-                except ConnectionResetError:
-                    exit_name = addr_name[str(addr)]
-                    exit_client = name_client[exit_name]
-                    all_clients.remove(exit_client)
-                    msg = exit_name + " 退出了群聊"
-                    send_all(all_clients, addr, msg)
-                    break
-
-        def send_all(socks, addr, msg):
-            for sock in socks:
-                sock.send(msg.encode("utf-8"))
-
-        def send_one(sock, addr, msg):
+    def send_all(socks, addr, msg):
+        for sock in socks:
             sock.send(msg.encode("utf-8"))
 
-        while True:
-            sock, addr = server.accept()
-            name = sock.recv(1024).decode("utf-8")
-            addr_name[str(addr)] = name
-            name_client[name] = sock
-            all_clients.append(sock)
-            hello = name + "加入了聊天室"
-            send_all(all_clients, addr, hello)
-            client_thread = threading.Thread(target=handle_sock, args=(sock, addr))
-            client_thread.start()
+    def send_one(sock, addr, msg):
+        sock.send(msg.encode("utf-8"))
+
+    while True:
+        sock, addr = server.accept()
+        name = sock.recv(1024).decode("utf-8")
+        addr_name[str(addr)] = name
+        name_client[name] = sock
+        all_clients.append(sock)
+        hello = name + "加入了聊天室"
+        send_all(all_clients, addr, hello)
+        client_thread = threading.Thread(target=handle_sock, args=(sock, addr))
+        client_thread.start()
+```
 2. 客户端：
 client.py  
+```python
+    import socket
+    import threading
 
-        import socket
-        import threading
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = socket.gethostname()
+    port = 9999
+    s.connect((host, port))
+    name = "cc"
+    s.send(name.encode("utf-8"))
 
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = socket.gethostname()
-        port = 9999
-        s.connect((host, port))
-        name = "cc"
-        s.send(name.encode("utf-8"))
-
-        def receive_handle(sock, addr):
-            while True:
-                data = sock.recv(1024)
-                print(data.decode("utf-8"))
-
-        # 开启线程监听接收消息
-        receive_thread = threading.Thread(target=receive_handle, args=(s, '1'))
-        receive_thread.start()
-
+    def receive_handle(sock, addr):
         while True:
-            re_data = input()
-            s.send(re_data.encode("utf-8"))
+            data = sock.recv(1024)
+            print(data.decode("utf-8"))
 
+    # 开启线程监听接收消息
+    receive_thread = threading.Thread(target=receive_handle, args=(s, '1'))
+    receive_thread.start()
+
+    while True:
+        re_data = input()
+        s.send(re_data.encode("utf-8"))
+```
 #### 网络编程常用模块：
 ![Python网络编程常用模块](post/instruction/python/socket_module.png)  
 [Python官方 Socket Library and Modules](<https://docs.python.org/3.0/library/socket.html>)
