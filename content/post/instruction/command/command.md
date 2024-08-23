@@ -35,14 +35,18 @@ categories = ['指令语法']
 ## conda
 
 - conda create -n env_name python=xx：创建环境
-- conda config --add channels url：添加源
-- conda config --remove channels url：删除源
+- conda create --name new_env --clone copied_env：复制环境
+- conda env list：查看环境
 - conda activate env_name：激活环境
 - conda deactivate：退出环境
-- conda env list：查看环境
 - conda remove -n env_name --all：删除环境
-- conda install package_name：安装包
+
+- conda config --add channels url：添加源
+- conda config --remove channels url：删除源
+
 - conda list：查看已安装的包
+- conda install package_name (-c channel_name)：安装包(从指定源安装)
+- conda remove package_name：删除包
 - conda search package_name：搜索包
 - conda update package_name：更新包
 
