@@ -9,6 +9,16 @@ categories = ['指令语法']
 
 ## 基础语法
 
+*args 允许你将任意数量的非关键字参数传递给一个函数。这些参数会以一个元组的形式传递给函数。
+
+**kwargs 允许你将任意数量的关键字参数传递给一个函数。这些参数会以一个字典的形式传递给函数。
+
+    def my_function(*args, **kwargs):
+        print("args:", args)
+        print("kwargs:", kwargs)
+
+    my_function(1, 2, 3, name="Alice", age=30)
+
 ### 数据类型
 不可变数据（3 个）：Number（数字）、String（字符串）、Tuple（元组）；  
 可变数据（3 个）：List（列表）、Dictionary（字典）、Set（集合）。
@@ -355,15 +365,258 @@ Python的迭代器有两个基本的方法：iter() 和 next()。
         for value in generator:
             print(value)  # 输出:5 4 3 2 1
 #### 装饰器
+装饰器本质上是一个函数，它接收一个函数作为参数并返回一个新的函数。这个新函数是对原函数的一种包装或增强，可以在不改变原函数代码的前提下，增加额外的功能。
+
+Python 还提供了一些内置的装饰器，比如 @staticmethod 和 @classmethod，用于定义静态方法和类方法。
+
+##### 工作流程
+装饰器的工作流程可以分为以下几个步骤：
+
+1. 定义装饰器：首先定义一个装饰器函数，该函数**接收一个函数作为参数**。
+2. 定义包装函数：在装饰器函数内部，定义一个包装函数（wrapper），这个包装函数会调用原函数，并可以在调用前后添加额外的逻辑。
+3. 返回包装函数：装饰器函数返回这个包装函数。
+4. 使用@语法：在需要被装饰的函数定义前使用@符号加上装饰器名称，这样使用被装饰函数时，Python解释器会自动**将这个函数作为参数**传递给装饰器，并将**包装函数赋值给原函数名**。
+
+因此调用被装饰函数时，实际上是调用了包装函数。
+
+##### 装饰器语法格式：
+
+    # 这是装饰器函数，参数 func 传入被装饰的函数
+    def logger(func):
+        def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
+            print('我准备开始执行：{} 函数了:'.format(func.__name__))
+            
+            func(*args, **kwargs)# 真正执行被装饰函数的是这行。
+
+            print('我执行完了。')
+        return wrapper # 注意需要返回包装函数
+
+    @logger
+    def add(x, y): # 被装饰的函数，实际上是logger的参数func
+        print('{} + {} = {}'.format(x, y, x+y))
+
+    add(2, 3)
+
+##### 带参数的装饰器语法格式：需要两层嵌套
+因为装饰器函数的参数只有func(被装饰函数)，所以无法直接传入参数，需要额外嵌套一层。
+
+示例一：
+
+    def repeat(n): # 传入装饰器参数
+        def decorator(func):
+            def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
+                for i in range(n):
+                    print('No.',i+1,end=' ')
+                    func(*args, **kwargs)
+            return wrapper
+        return decorator
+
+    @repeat(3) # 装饰器名称应为最外层
+    def greet(name):
+        print(f"Hello, {name}!")
+
+    greet("Alice")
+示例二：
+
+    def say_hello(country): # 传入装饰器参数
+        def deco(func):
+            def wrapper(*args, **kwargs): # 传入被装饰函数func的各参数
+                if country == "china":
+                    print("你好!")
+                elif country == "america":
+                    print('hello.')
+                else:
+                    return
+
+                func(*args, **kwargs)# 真正执行被装饰函数的一行
+
+            return wrapper # 注意需要返回包装函数
+        return deco # 注意需要返回次层装饰器函数
+
+    # 小明，中国人
+    @say_hello("china")
+    def xiaoming():
+        pass
+    # jack，美国人
+    @say_hello("america")
+    def jack():
+        pass
+
+    xiaoming()
+    print("------------")
+    jack()
+
+
+### 异常处理
+Python的异常处理机制非常灵活，可以处理多种类型的异常。
+
+#### 基本语法
+
+    try:
+        <可能发生异常的代码>
+    except <异常类型1>:
+        <异常处理1>
+    except (<异常类型2>, <异常类型3>,...):
+        <异常处理2>
+    # 可以用except:作为通配符处理所有异常
+    else: # 必须放在所有except语句之后
+        <没有异常发生时执行>
+    finally:
+        <无论异常是否发生都执行> # 若try/except/else产生的异常未被处理，将先执行finally语句再被抛出
+#### raise语句
+raise语句用于手动抛出异常，并通知调用者发生了什么异常。  
+
+语法格式：raise唯一的一个参数Exception，指定了要被抛出的异常。若不提供参数，则重新抛出当前异常而不进行处理。
+
+    raise [Exception [, args [, traceback]]]
+示例：  
+
+    x=10
+    try:
+        if x>5:
+            raise NameError('HiThere')  # 抛出一个NameError异常。
+    except NameError:
+        print('An exception flew by!')
+        raise # 不提供Exception参数，则重新抛出当前异常，程序中断于此。若删去该行，仍会执行下面语句输出y的值。
+    y=6
+    print(y)
+
+#### 用户自定义异常
+用户自定义异常类需要继承自Exception类。
+
+示例：  
+
+    class MyError(Exception):
+        def __init__(self, value): # 覆盖类Exception的__init__方法
+            self.value = value
+        def __str__(self):
+            return repr(self.value)
+   
+    try:
+        raise MyError(2*2)
+    except MyError as e:
+        print('My exception occurred, value:', e.value)
+
+#### with语句进行预定义的清理
+一些对象定义了标准的清理行为，无论系统是否成功的使用了它，一旦不需要它了，那么这个标准的清理行为就会执行。
+关键词 with 语句就可以保证诸如文件之类的对象在使用完之后一定会正确的执行它的清理方法:
+
+    with open("myfile.txt") as f:
+        for line in f:
+            print(line, end="")
+以上这段代码执行完毕后，就算在处理过程中出问题了，文件 f 总是会关闭。        
+
+补充：with 语句的语法格式如下：
+
+    with expression [as variable]:
+        with-block
+
+expression 是一个**上下文管理器对象**，它定义了该对象的上下文，with-block 是在该上下文中要执行的语句。
+
+当执行到 with 语句时，会首先执行 expression，该表达式应该返回一个上下文管理器对象。然后，with 语句将该上下文管理器对象压入一个栈，并将该对象的变量（如果有）赋值给 variable（如果有）。
+
+当执行完 with-block 后，会弹出该上下文管理器对象，并调用其清理方法。
 
 ### 面向对象
-#### self
-self代表类的实例，而非类。  
-self 是一个惯用的名称，用于表示类的实例（对象）自身。它是一个指向实例的引用，使得类的方法能够访问和操作实例的属性。
+#### self参数
+self表示类的实例（对象）自身，通过self参数将类的实例传入类的方法中，使得类的方法能够访问和操作**所创建的各个实例**的属性。
+##### 示例一：
+    class MyClass:
+        def __init__(self, value):
+            self.value = value
+
+        def display_value(self):
+            print(self.value)
+
+    # 创建一个类的实例
+    obj = MyClass(42) # self传入obj实例
+    obj2 = MyClass(25) # self传入obj2实例
+    # 调用实例的方法
+    obj.display_value() # 输出 42
+    obj2.display_value() # 输出 25
+
+##### 示例二：查看self实例位置
+    class Desc:
+        def __get__(self, ins, cls):
+            print(self, ins, cls) # self参数为Desc类的实例，ins参数为Test类的实例，cls参数为Test类本身。
+    class Test:
+        x = Desc()
+        def prt(self):
+            print('self in Test: %s' % self)
+
+    t0 = Test()
+    t1 = Test()
+
+    t0.prt()
+    t1.prt()
+    t0.x
+    t1.x
+    # 输出：
+    # self in Test: <__main__.Test object at 0x000001>
+    # self in Test: <__main__.Test object at 0x000002>
+    # <__main__.Desc object at 0x000003> <__main__.Test object at 0x000001> <class '__main__.Test'>
+    # <__main__.Desc object at 0x000003> <__main__.Test object at 0x000002> <class '__main__.Test'>
+    # 说明：
+    # 1. 实例化Test类时，t0和t1传入的self参数分别对应Test类的两个实例。
+    # 2. Test类中的x = Desc()语句与self参数无关，因此不论是t0.x还是t1.x或Test.x，x都指向同一个Desc类的实例，即x是类Test的类属性。
+
 
 #### 类的继承
-Python支持多继承，一个类可以从多个父类继承方法和属性。  
+    class DerivedClassName(Base1, Base2, Base3):
+        <statement-1>
+        .
+        .
+        .
+        <statement-N>
+子类会继承父类的属性和方法，并可以对其进行覆写，也可以添加新的属性和方法。   
+
+Python支持多继承(并行继承、多重继承都可以)，一个类可以从多个父类继承方法和属性。
+当调用父类方法，且几个父类中有相同的方法名时，python将按从左到右的顺序调用父类中的方法。
+父类可以从别的文件import。
+
+##### 示例：
+
+    class people:
+        # 定义构造方法
+        def __init__(self, n, a):
+            self.name = n
+            self.age = a
+        def speak(self):
+            print("父类%s 说: 我 %d 岁。" % (self.name, self.age))
+
+    # 单继承示例
+    class student(people):
+        grade = ''
+        def __init__(self, n, a, g):
+            # 调用父类的构函
+            people.__init__(self, n, a)
+            self.grade = g
+        # 覆写父类的方法
+        def speak(self):
+            print("子类%s 说: 我 %d 岁了，我在读 %d 年级" % (self.name, self.age, self.grade))
+
+    s0 = people('s0',18)
+    s1 = student('s1',10,3)
+    s0.speak()
+    s1.speak()
+    # 输出：父类s0 说: 我 18 岁。 子类s1 说: 我 10 岁了，我在读 3 年级
+
 #### 类的方法种类
+静态方法: 用 @staticmethod 装饰的不带 self 参数的方法叫做静态方法，类的静态方法可以没有参数，可以直接使用类名调用。
+
+普通方法: 默认有个self参数，且只能被对象调用。
+
+类方法: 默认有个 cls 参数，可以被类和对象调用，需要加上 @classmethod 装饰器。定义和调用时不需要传入实例对象。
+
+    @staticmethod
+    def func0():
+        print('静态方法')
+
+    @classmethod
+    def func1(cls):
+        print('类方法')
+        print(cls)
+        
 类的专有方法：
 
     __init__(self, args)：类的构造函数，在对象创建时调用。
@@ -376,15 +629,132 @@ Python支持多继承，一个类可以从多个父类继承方法和属性。
 
     def public_method(self, args)：
         <表达式> # 公有方法，可以在类的外部调用。
-类的私有属性： 
+类的私有属性(封装)： 
 
     __private_attribute = value #私有属性，只能在类的内部访问。
+这确保了外部代码不能随意修改类的内部状态。  
+若需要从外部读取或修改私有属性时，需要通过公有方法来实现。
+
 类的公有属性：
 
     public_attribute = value #公有属性，可以在类的外部访问。
 
 
 ## 正则表达式
+### 基本函数
+1. re.search(pattern, string, flags=0)：在字符串中搜索匹配项。  
+2. re.match(pattern, string, flags=0)：从字符串的开头匹配，只匹配开头。  
+3. re.findall(pattern, string, flags=0)：找到所有匹配的子串，并以列表形式返回。  
+    或pattern.findall(string[, pos[, endpos]])，与findall()相同，可指定搜索区间。  
+4. re.sub(pattern, repl, string, count=0, flags=0)：替换匹配到的子串。  
+5. re.split(pattern, string[, maxsplit=0, flags=0])：根据正则表达式分割字符串。  
+6. re.compile(pattern[, flags])：编译正则表达式，以便重复使用。 
+
+参数解释：
+
+- pattern：正则表达式。
+- string：要匹配的字符串。
+- flags：可选参数，表示匹配模式，比如忽略大小写，多行匹配等。
+- repl：要替换的字符串，repl参数也可以是一个函数，用于 re.sub() 方法。
+- count：用于 re.sub() 方法，表示最多替换的次数。
+- maxsplit：用于 re.split() 方法，表示最多分割次数。
+
+示例1：
+
+    import re
+    pattern = re.compile(r'([a-z]+) ([a-z]+) ([a-z]+)', re.I)   # re.I 表示忽略大小写
+    # 匹配三个单词的组合
+    m = pattern.search('Hello World Wide Web')
+    print(m.groups())
+示例2：re.sub()方法，repl参数是一个函数
+
+    import re
+    
+    # 将匹配的数字乘以 2
+    def double(matched):
+        valueout = int(matched.group('value0'))
+        return str(valueout * 2)
+    
+    s = 'A23G4HFD567'
+    print(re.sub('(?P<value0>\d+)', double, s))  
+    # (?P<name>...)：这是命名捕获组的语法。name 是指定的组名，... 是要捕获的正则表达式模式。
+    # 此处即捕获由数字组成的字符串组value0，传递至double()函数
+
+### 匹配规则
+#### 字符和分组
+    .：匹配除换行符外任意字符。
+    []：匹配括号中的任意字符。如[abc]：匹配a、b、c中的任意一个字符。
+    [^]：匹配不在括号中的任意字符。如[^abc]：匹配除 a、b、c 以外的任意字符。
+    [a-z]：匹配指定范围内的字符。例如，[a-z] 匹配任意小写字母。
+    ()：用于分组。例如，(abc)+ 匹配一个或多个连续的 abc。
+    |：表示或。例如，abc|def 匹配 abc 或 def。
+#### 量词
+    *：匹配前面的元素零次或多次。例如，a* 匹配 ""、a、aa、aaa 等。
+    +：匹配前面的元素一次或多次。例如，a+ 匹配 a、aa、aaa 等。
+    ?：匹配前面的元素零次或一次。例如，a? 匹配 "" 或 a。
+    {n}：匹配前面的元素恰好 n 次。例如，a{3} 匹配 aaa。
+    {n,}：匹配前面的元素至少 n 次。例如，a{3,} 匹配 aaa、aaaa 等。
+    {n,m}：匹配前面的元素至少 n 次，但不超过 m 次。例如，a{2,3} 匹配 aa 或 aaa。
+#### 位置匹配
+    ^：匹配字符串的开始。例如，^abc 匹配以 abc 开头的字符串。
+    $：匹配字符串的结束。例如，abc$ 匹配以 abc 结尾的字符串。
+    \b：匹配单词边界。例如，\bcat\b 匹配完整的单词 cat。
+    \B：匹配非单词边界。例如，\Bcat\B 匹配字符串 scatters 中的 cat。
+#### 特殊字符
+    \：转义字符，用于匹配特殊字符。如'\. '匹配点号，而不是匹配任意字符。
+    \d：匹配任意数字。相当于 [0-9]
+    \D：匹配任意非数字。相当于 [^0-9]
+    \w：匹配任意字母、数字、下划线。相当于 [a-zA-Z0-9_]
+    \W：匹配任意非字母、数字、下划线。相当于 [^a-zA-Z0-9_]
+    \s：匹配任意空白字符，包括空格、制表符、换行符。相当于[ \t\n\r\f\v]。
+    \S：匹配任意非空白字符。相当于 [^ \t\n\r\f\v]。
+    \n：匹配换行符。
+    \t：匹配制表符。
+    \r：匹配回车符。
+#### 零宽断言
+    (?=...)：正向肯定断言，要求后面必须能匹配某个模式。例如，a(?=b) 匹配 a，但要求 a 后面必须有 b。
+    (?!...)：正向否定断言，要求后面不能匹配某个模式。例如，a(?!b) 匹配 a，但要求 a 后面不能有 b。
+    (?<=...)：反向肯定断言，要求前面必须能匹配某个模式。例如，(?<=b)a 匹配 a，但要求 a 前面必须有 b。
+    (?<!...)：反向否定断言，要求前面不能匹配某个模式。例如，(?<!b)a 匹配 a，但要求 a 前面不能有 b。
+
+#### 常见表达式
+匹配电子邮件：
+
+    [a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+
+    # [a-zA-Z0-9_.+-]+：匹配至少一个字母、数字、下划线、点、加号或减号
+    # [a-zA-Z0-9-]+：匹配@后面至少一个字母、数字或减号
+    # [a-zA-Z0-9-.]+：匹配.后面至少一个字母、数字、减号或点
+    
+匹配手机号码：
+
+    (\+?\d{1,3})?[-.\s]?(\d{3})[-.\s]?(\d{4})[-.\s]?(\d{4})
+    # (\+?\d{1,3})?：加号可选，后跟一到三位数字。该非捕获组可选
+    # [-.\s]?：连字符、句点、空格可选
+    # (\d{3})：三位数字
+
+
+匹配IP地址：
+
+    ((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+    # 匹配((0-255).)三次，再匹配(0-255)一次
+
+匹配URL：
+
+    https?://[a-zA-Z0-9./?=&_-]+
+    # s?：匹配s可选，即http或https
+    # (?:www\.)是非捕获组，只用于分组而不捕获，配合其后的问号，(?:www\.)?表示www.可选。
+    # [a-zA-Z0-9./?=&_-]+匹配方括号中任意字符一次或多次
+示例：
+
+    import re
+
+    pattern_mail=re.compile('[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
+    pattern_num=re.compile('(\+?\d{1,3})?[-.\s]?(\d{3})[-.\s]?(\d{4})[-.\s]?(\d{4})')
+    pattern_ip=re.compile('((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)')
+    pattern_url= re.compile('https?://(?:www\.)?[a-zA-Z0-9./?=&_-]+')
+    
+    s = 'self表示类的实例（对象）自身，通过self参数ychuang317@163.com将类的实例传入+86-13706811848类的方法中，使得类的方法能255.255.255.0够访问和操作http://hych0317.github.io/hugoweb_auto所创建的各个实例的属性。'
+    print(re.search(pattern_num, s).group(0))
 
 ## Python Requests
 python的requests模块可以用来发送HTTP请求，它可以自动处理cookie、认证、重定向、超时等问题。
@@ -452,6 +822,7 @@ requests模块默认会自动处理重定向，如果服务器返回的响应状
 #### 超时设置
 超时设置是指如果服务器在指定时间内没有响应，则请求超时。
 requests模块默认超时时间为10秒，可以通过timeout参数设置超时时间。
+
 ## Python 网络编程
 socket使主机间或者一台计算机上的进程间可以通讯。
 
@@ -607,6 +978,7 @@ client.py
 #### 网络编程常用模块：
 ![Python网络编程常用模块](post/instruction/python/socket_module.png)  
 [Python官方 Socket Library and Modules](<https://docs.python.org/3.0/library/socket.html>)
+
 ## Python JSON
 待补充
 ## Python MySQL
