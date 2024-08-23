@@ -53,7 +53,10 @@ vim有两种模式：命令模式和编辑模式。
 ## Conda
 ### 环境操作
 - conda create -n env_name python=xx：创建环境
-- conda create --name new_env --clone copied_env：复制环境
+- conda create -n new_env --clone copied_env：复制环境
+    本地复制直接在本地环境文件夹复制并重命名即可
+- conda env export > environment.yml：导出环境
+- conda env create -f environment.yml：导入环境
 - conda env list：查看环境
 - conda activate env_name：激活环境
 - conda deactivate：退出环境
@@ -65,6 +68,10 @@ vim有两种模式：命令模式和编辑模式。
 - conda remove package_name：删除包
 - conda search package_name：搜索包
 - conda update package_name：更新包
+
+#### 验证pytorch安装
+1. 在对应虚拟环境中使用conda list查看
+2. 输入python / import torch / torch.cuda.is_available()，如果输出True则安装成功，否则失败。
 
 ### 源管理
 - conda config --add channels url：添加源

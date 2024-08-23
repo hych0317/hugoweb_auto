@@ -18,6 +18,8 @@ categories:
     git remote add origin {你的github仓库地址}  
     git push -u origin main
 
+push更容易成功的方法：浏览器打开github页面
+
 ### 后续上传
     git add .  
     git commit  
