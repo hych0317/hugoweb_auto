@@ -1,12 +1,10 @@
 +++
-title = 'Command'
+title = '命令行指令'
+description = '包含Linux、Conda、vim'
 date = 2024-08-22T14:26:16+08:00
 draft = false
 categories = ['指令语法']
 +++
-
-
-# 命令行指令
 
 ## Linux
 ### 文件操作
