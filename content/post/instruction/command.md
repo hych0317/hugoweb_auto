@@ -45,8 +45,14 @@ vim有两种模式：命令模式和编辑模式。
 - :set nohlsearch：取消高亮搜索结果
 - :set fileencoding=utf-8：设置文件编码为utf-8
 
-
 编辑模式：按下i进入编辑模式，按下ESC进入命令模式。
+
+### pip
+- pip install package_name：安装包
+- pip uninstall package_name：卸载包
+- pip list：查看已安装的包
+- pip freeze > requirements.txt：导出依赖
+- pip install -r requirements.txt：导入依赖
 
 ## Conda
 ### 环境操作

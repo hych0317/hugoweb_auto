@@ -40,10 +40,13 @@ categories:
 
 ## 代码块
 1. 缩进tab表示代码块
-2. 代码块前后分别用三个反引号```表示，同时可以使用语言标识符指定代码类型，如：
+2. 代码块前后分别用三个反引号```表示，同时可以使用语言标识符指定代码类型，如：  
+
+python代码块：
 ```python（或yaml、json等）
 print("Hello, world!")
 ```
+yaml代码块：
 ```yaml
 links:
   - title: My GitHub

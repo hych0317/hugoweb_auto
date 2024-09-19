@@ -1,7 +1,7 @@
 baseurl: https://hych0317.github.io/hugoweb_auto/
 languageCode: en-us
 theme: hugo-theme-stack
-paginate: 4
+paginate: 5
 title: Personal Site
 copyright: ychuang
 
@@ -16,16 +16,16 @@ hasCJKLanguage: true
 languages:
     en:
         languageName: English
-        title: Example Site
+        title: The Answer Reply to All
         weight: 1
         params:
-            description: Example description
+            description:  
     zh-cn:
         languageName: 中文
         title: 答案说明所有
         weight: 2
         params:
-            description: 演示说明
+            description:  
 
 services:
     # Change it to your Disqus shortname before using
