@@ -20,8 +20,30 @@ categories = ['指令语法']
 ### 数据类型
 不可变数据（3 个）：Number（数字）、String（字符串）、Tuple（元组）；  
 可变数据（3 个）：List（列表）、Dictionary（字典）、Set（集合）。
->使用type()函数可以查看变量的类型。
 >对不可变数据对象重新赋值，实际上是创建了一个新的对象，不是修改了原来的对象。
+
+#### isinstance()
+isinstance() 函数用于判断一个对象是否是一个已知的类型，返回 True 或 False。  
+```python
+a = 2
+isinstance (a,int)# True
+```
+type()与isinstance()的区别：  
+type() 不会认为子类是一种父类类型，不考虑继承关系
+isinstance() 会认为子类是一种父类类型，考虑继承关系  
+**推荐使用 isinstance() 来判断对象类型** 
+```python
+# 区别示例
+class A:
+    pass
+class B(A):
+    pass
+ 
+isinstance(A(), A)    # returns True
+type(A()) == A        # returns True
+isinstance(B(), A)    # returns True
+type(B()) == A        # returns False
+```
 
 #### 数据类型转换
 对于同大类的数据类型，Python 可以自动进行类型转换。如int+float=float。    
@@ -131,7 +153,20 @@ is 和 is not 用于比较两个变量是否指向同一个对象。
     list.pop(n)        # 从列表中删除某个元素（默认最后一个元素），并且返回该元素的值
     list.reverse()      # 反转列表
 ```
+##### 列表的sort()方法
+sort() 方法没有返回值，但是会对列表的对象进行排序
+```python
+list.sort(cmp=None, key=None, reverse=False)
+# cmp -- 可选参数, 如果指定了该参数会使用该参数的方法进行排序。
+# key -- 主要是用来进行比较的元素，只有一个参数，具体的函数的参数就是取自于可迭代对象中，指定可迭代对象中的一个元素来进行排序。
+# reverse -- 排序规则，reverse = True 降序， reverse = False 升序（默认）
+```
 
+sorted()函数也能对列表进行排序，但是它返回一个新的列表，而不是对原列表进行排序。 
+```python
+sorted(iterable, key=None, reverse=False)
+# iterable -- 待排序的可迭代对象。
+``` 
 
 #### 字典
 字典是一种映射类型，字典用 { } 标识，它是一个无序的 键(key) : 值(value) 的集合，集合元素间用逗号隔开。  

@@ -1,12 +1,13 @@
 ---
 title: 'wandb'
-date: 2024-08-12T14:36:30+08:00
+date: 2024-09-19T14:36:30+08:00
 draft: false
 categories:
     - 指令语法
-
+description: 'wandb是一个python库，可以帮助你记录和分析你的机器学习模型的训练过程。'
 ---
 
+>(<https://docs.wandb.ai/quickstart/>)
 
 ## 安装库
 ```python
