@@ -84,35 +84,35 @@ End-to-end和多模态是当前大模型的趋势。
 
 ### 几种身份的区别
 **目标和动机的差异**
-![差别](post/exp_conclution/diff.png)
+![差别](post/exp_conclution/LLM trend/diff.png)
 大厂的目标是升职加薪，PhD的目标就是博士毕业，创业的目标就是套现退出
 
 **优缺点分析**
-![打工人](post/exp_conclution/dgr.png)
+![打工人](post/exp_conclution/LLM trend/dgr.png)
 晚上不用做噩梦，但逐渐成为螺丝钉。  
 好处是，可以在一个相对简单的环境里学习各种从业知识、有相对稳定的收入和空余时间；坏处就是停留在打工人或者职业经理人的思维。
 
-![PhD](post/exp_conclution/phd.png)
+![PhD](post/exp_conclution/LLM trend/phd.png)
 好处是，在几年的时间里可以专心探索某一个领域；  
 坏处是，很少有实验室能参与大项目的研发，并且需要有很强的自我驱动力。要真的热爱研究，不然坚持不下去，你会觉得研究这个东西到底有什么意义，写这篇论文要干嘛。  
 其实，你可以这样想：我写这篇文章就是为了练习写作，等到更厉害、更大的成果做出来后，写作不能给我拉后腿。你要有一个更远大的目标，是真的热爱它。  
 PS：读不了一点
 
-![创业](post/exp_conclution/startup.png)
+![创业](post/exp_conclution/LLM trend/startup.png)
 
 ### 驱动力的来源
-![动机](post/exp_conclution/motivation.png)
+![动机](post/exp_conclution/LLM trend/motivation.png)
 欲望是越底层越好，名、利、权，都是底层的欲望。恐惧是可以让你抑郁的恐惧，也是让你感受到生死的恐惧。  
 
 你需要把欲望和恐惧转变成积极向上的动机，你的动机一定是正确的，符合价值观的，因为逃避、放纵满足不了欲望，也缓解不了恐惧，唯一克服它的办法是，把它变成一个积极向上、符合社会价值的一个动机。  
 
-![动机差异](post/exp_conclution/motidiff.png)
+![动机差异](post/exp_conclution/LLM trend/motidiff.png)
 有了动机之后就得想，我要解决什么问题，你的问题可能就是你的动机本身。  
 
 举例来说，语言模型为什么能运作？没人知道，这是一个很有学术价值的东西。语言模型能不能孵化出新的应用？这是商业价值上的问题。实在不行的话，也可以思考语言模型在某个产品上如何落地。  
 
 **一个提升自我的方法**
-![方法](post/exp_conclution/improve.png)
+![方法](post/exp_conclution/LLM trend/improve.png)
 为什么目标没达成？  
 
 可能是因为懒，那么你得直面懒的问题。我怎么能让自己勤奋一点？找一个学习伙伴，每天在图书馆待着，要大家相互监督等。  

@@ -3,6 +3,7 @@ title = 'LLM_flow'
 date = 2024-09-25T22:49:25+08:00
 draft = false
 description = 'LLM训练、部署全流程及问题解决、经验总结'
+categories = ['AIGC']
 +++
 
 ## 前置下载
