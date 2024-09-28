@@ -158,8 +158,21 @@ sort() 方法没有返回值，但是会对列表的对象进行排序
 ```python
 list.sort(cmp=None, key=None, reverse=False)
 # cmp -- 可选参数, 如果指定了该参数会使用该参数的方法进行排序。
-# key -- 主要是用来进行比较的元素，只有一个参数，具体的函数的参数就是取自于可迭代对象中，指定可迭代对象中的一个元素来进行排序。
+# key -- key 参数要求传递的是一个函数，用于提取每个元素的排序依据，该参数取自于可迭代对象中，指定可迭代对象中的一个元素（即元素的元素）来进行排序。
 # reverse -- 排序规则，reverse = True 降序， reverse = False 升序（默认）
+```
+先根据key指定要排序的元素，再根据reverse指定顺序、cmp指定比较的方法。   
+ 
+例子：
+```python
+# 获取列表的第二个元素
+def takeSecond(elem):
+    return elem[1]
+# 列表
+random = [(2, 2), (3, 4), (4, 1), (1, 3)]
+# 指定第二个元素排序
+random.sort(key=takeSecond)
+print(random)  # 输出：[(4, 1), (2, 2), (1, 3), (3, 4)]
 ```
 
 sorted()函数也能对列表进行排序，但是它返回一个新的列表，而不是对原列表进行排序。 
@@ -167,6 +180,17 @@ sorted()函数也能对列表进行排序，但是它返回一个新的列表，
 sorted(iterable, key=None, reverse=False)
 # iterable -- 待排序的可迭代对象。
 ``` 
+例子：
+```python
+def SortTuples( x ): # x is a list contain tuples
+    return sorted(x,key=lambda item: item[1])
+
+if __name__ == '__main__':
+    l =  [('English', 88), ('Science', 90), ('Maths', 97), ('Social sciences', 82)]
+    m = SortTuples( l )
+    print( m )
+    assert m == [('Social sciences', 82), ('English', 88), ('Science', 90), ('Maths', 97)] 
+```
 
 #### 字典
 字典是一种映射类型，字典用 { } 标识，它是一个无序的 键(key) : 值(value) 的集合，集合元素间用逗号隔开。  
@@ -233,7 +257,7 @@ Python允许使用反斜杠`\`来实现多行语句，例如：
 * 默认输出是换行的，如果要实现不换行需要在变量末尾加上 end=""。
 #### 条件语句
 Python中的else if关键字为elif.  
-Python中没有switch语句，在python3.10中引入了match语句。  
+Python中**没有switch语句**，所以多个条件判断，只能用 elif 来实现。在python3.10中引入了match语句。  
 
     match subject:
         case <pattern_1>:
