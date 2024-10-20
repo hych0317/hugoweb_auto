@@ -6,21 +6,40 @@ description = 'LLM训练、部署全流程及问题解决、经验总结'
 categories = ['AIGC']
 +++
 
-## 前置下载
+## 前置
+### 服务器使用指南
+选择GPU时，使用
+```python
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "n"#n为GPU编号，从0开始。在import torch前设置环境变量方可屏蔽其他GPU。
+import torch
+```
 ### pytorch安装
 使用pip安装比conda更靠谱，指令见(<https://pytorch.org/get-started/locally/>)
 cuda版本等细节见土堆教程。
 
 ### 下载预训练模型
 **注意：需要使用git lfs clone以下载模型参数文件。**
-git lfs install  
-lfs下载大文件时，其文件大小会增加，但进度条百分比和网速会卡住，当下完完整的一个大文件后才更新进度，耐心等待即可。  
+* git lfs install（现已与git clone集成）  
+    lfs下载大文件时，其文件大小会增加，但进度条百分比和网速会卡住，当下完完整的一个大文件后才更新进度，耐心等待即可。  
 
-huggingface下载：  
-选择clone repository（三个点展开），使用提供的git clone命令下载到本地。  
-部分未公开模型需要获取授权。  
-魔搭社区下载：  
-也是找git clone命令。
+* huggingface下载：  
+
+    1.  
+    ```bash
+    pip install -U huggingface_hub
+    # 设置环境变量为镜像源(建议写入/.bashrc)
+    export HF_ENDPOINT=https://hf-mirror.com
+    # 下载模型
+    huggingface-cli download --resume-download <model_name> --local-dir <local_dir_name>
+    # 下载数据集
+    huggingface-cli download --repo-type dataset --resume-download <dataset_name> --local-dir <local_dir_name>
+    ## 可以添加--local-dir-use-symlinks False禁用软链接，下载路径下所见即所得
+    ```  
+    2. 选择clone repository（三个点展开），使用提供的git clone命令下载到本地。  
+
+* 魔搭社区下载：  
+    参考见上。
 
 ## 推理(inference)
 ### 概述    

@@ -12,25 +12,30 @@ categories = ['指令语法']
 - cd：切换目录
 - mkdir：创建目录
 - touch：创建文件
-- rm：删除文件或目录
+- rm -rf：删除文件或目录（-r：递归删除文件夹及其下文件；-f：强制删除所有属性的文件，包括只读）
 - mv：移动或重命名文件或目录
 - cp：复制文件或目录
 - cat：查看文件内容
 - sudo：以超级用户身份执行命令
 - su：切换用户身份
 - chmod：修改文件或目录权限
+- df：查看磁盘使用
+- du -sh <directory>：查看目录下总大小
 
 ### 进程管理
-- ps：查看进程
+- ps -ef：查看进程（UID用户标识号，PID进程标识号，PPID父进程标识号，CMD命令）
 - top：实时显示进程信息
-- kill：杀死进程
+- who：查看登录用户
+- kill -s PID：杀死进程
+    -9:强制杀死进程
+    -15:正常杀死进程
+    杀死指定用户进程：kill -9 $(ps -ef | grep user_name)或kill -u user_name
 
 ### 网络管理
 - ifconfig：查看网络接口信息
 - netstat：查看网络连接信息
 - ssh：远程登录
 - scp：远程复制文件
-- git：版本控制
 
 ### vim
 vim有两种模式：命令模式和编辑模式。
