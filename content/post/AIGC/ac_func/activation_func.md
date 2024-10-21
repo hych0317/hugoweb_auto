@@ -2,6 +2,7 @@
 title = '激活函数'
 date = 2024-10-20T21:01:22+08:00
 draft = false
+categories = ["AIGC"]
 +++
 
 ## 激活函数
