@@ -25,7 +25,18 @@ cuda版本等细节见土堆教程。
 
 * huggingface下载：  
 
-    1.  
+    1.
+    ```bash
+    sudo apt install aria2
+    wget https://hf-mirror.com/hfd/hfd.sh
+    chmod +x hfd.sh
+    export HF_ENDPOINT=https://hf-mirror.com
+    # 下载模型
+    ./hfd.sh <model_name> --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
+    # 下载数据集
+    ./hfd.sh <dataset_name> --dataset --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
+    ```
+    2.  
     ```bash
     pip install -U huggingface_hub
     # 设置环境变量为镜像源(建议写入/.bashrc)
@@ -36,7 +47,7 @@ cuda版本等细节见土堆教程。
     huggingface-cli download --repo-type dataset --resume-download <dataset_name> --local-dir <local_dir_name>
     ## 可以添加--local-dir-use-symlinks False禁用软链接，下载路径下所见即所得
     ```  
-    2. 选择clone repository（三个点展开），使用提供的git clone命令下载到本地。  
+    3. 选择clone repository（三个点展开），使用提供的git clone命令下载到本地。  
 
 * 魔搭社区下载：  
     参考见上。

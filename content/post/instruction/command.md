@@ -53,7 +53,12 @@ vim有两种模式：命令模式和编辑模式。
 编辑模式：按下i进入编辑模式，按下ESC进入命令模式。
 
 ### pip
-- pip install package_name：安装包
+- pip install -i <镜像源> <package_name>：安装包
+    镜像源:
+    -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
+    -i https://pypi.doubanio.com/simple/：豆瓣源
+    -i https://mirrors.aliyun.com/pypi/simple/：阿里云源
+
 - pip uninstall package_name：卸载包
 - pip list：查看已安装的包
 - pip freeze > requirements.txt：导出依赖
