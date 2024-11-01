@@ -114,23 +114,166 @@ y = 2 * torch.dot(x, x)# 2*((x_i)**2)
 y.backward() # 自动求导,应为dy/dx=4*x_i
 print(x.grad) # 输出梯度张量
 
-# 在默认情况下,PyTorch会累积梯度,我们需要清除之前的值  
+##1
+#在默认情况下,PyTorch会累积梯度,我们需要清除之前的值  
 x.grad.zero_()
 y = x.sum()# ATTENTION: 这里的y是标量,因为反向传播需要损失函数上的一个特定的值,从而计算梯度.此时y相当于损失函数,需要是一个值(标量),这样才可以进行backwards()
 y.backward()
 print(x.grad) # 输出梯度张量
 
-# 本例只想求偏导数的和，所以传递一个1的梯度是合适的
+##2 本例只想求偏导数的和，所以传递一个1的梯度是合适的
 x.grad.zero_()
 y = x * x# hadamard积,按元素
 # 等价于y.backward(torch.ones(len(x)))
 y.sum().backward()
 x.grad
+
+##3 分离计算图
+x0 = torch.arange(4.0,requires_grad=True)
+# 本例只想求偏导数的和，所以传递一个1的梯度是合适的
+y = x0 * x0
+
+# 只希望使用当前y的值,然后计算z=u(y当前的值)*x0,但不希望获取y的梯度,导致z=x*x*x
+u = y.detach()# 保存当前y的值,为常数,梯度不会更新
+print(u)
+z = u * x0
+z.sum().backward()
+print(x0.grad)
+print(x0.grad == u)# u是常数,导数即u
+
+x0.grad.zero_()
+y.sum().backward()
+print(x0.grad)
+print(x0.grad == 2 * x0)# 导数为2*x0
+
+##4 python控制流中的梯度计算
+# 该例子想说明,标量在控制流中(循环,条件分支)进行运算仍会记录梯度的变化
+import torch
+def f(a):
+    b = a
+    while b.norm() < 1000:# 验证循环对梯度的影响
+        b = b * 2
+    if b.sum() > 0:# 验证条件分支对梯度的影响
+        c = b
+    else:
+        c = 100 * b
+    return c
+
+a = torch.randn(size=(), requires_grad=True)
+
+d = f(a)# d=2^n(b在循环内的次数n)*1或100(根据条件分支判断)*a
+d.backward()# 因此d对a的导数就是d/a
+print(a.grad)
+print(a.grad == d / a)
 ```
-### 概率
+
+### 深度学习计算
+#### GPU相关
+```python
+import torch
+# 查看是否有GPU
+print(torch.cuda.is_available())
+# 设置可见的GPU
+import os
+os.environ["CUDA_VISIBLE_DEVICES=1,3"]# 仅第二、四个GPU可见，引号可加可不加
+## 也可以在运行前!export CUDA_VISIBLE_DEVICES=0.这样设置后程序中的1卡为实际的3卡
+# 设置设备
+device = torch.device("cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# 定义张量
+x = torch.tensor([[1, 2, 3],[4,5,6]], device=device)
+# 张量转移到GPU
+x = x.to(device)
+# 张量转移到CPU
+x = x.to("cpu")
+```
+#### 层和块
+
+#### 参数管理
+
+#### 延迟初始化
+
+#### 自定义层
+```python
+
+```
 
 ## 线性神经网络
+### 线性回归的简洁实现
+```python
+import numpy as np
+import torch
+from torch.utils import data
+from d2l import torch as d2l
 
+true_w = torch.tensor([2, -3.4])
+true_b = 4.2
+features, labels = d2l.synthetic_data(true_w, true_b, 1000)
+
+def load_array(data_arrays, batch_size, is_train=True):  #@save
+    """构造一个PyTorch数据迭代器"""
+    dataset = data.TensorDataset(*data_arrays)
+    return data.DataLoader(dataset, batch_size, shuffle=is_train)
+
+batch_size = 10
+data_iter = load_array((features, labels), batch_size)
+next(iter(data_iter))# 输出第一个batch的特征和标签,进行验证
+
+# nn是神经网络的缩写
+from torch import nn
+
+net = nn.Sequential(nn.Linear(2, 1))
+net[0].weight.data.normal_(0, 0.01)# torch中，带下划线的一般指赋值,这里normal_指用均值0,方差0.01的正态分布给w的data属性(即w的值)赋值
+net[0].bias.data.fill_(0)
+
+loss = nn.MSELoss()# 损失函数:平方L2范数
+optimizer = torch.optim.SGD(net.parameters(), lr=0.03)# 优化算法和学习率
+
+num_epochs = 3
+for epoch in range(num_epochs):
+    for X, y in data_iter:
+        l = loss(net(X) ,y)# 前向传播及计算损失函数
+        optimizer.zero_grad()# 清空累计梯度
+        l.backward()# 反向传播
+        optimizer.step()# 优化参数
+    l = loss(net(features), labels)
+    print(f'epoch {epoch + 1}, loss {l:f}')
+
+w = net[0].weight.data
+print('w的估计误差：', true_w - w.reshape(true_w.shape))
+b = net[0].bias.data
+print('b的估计误差：', true_b - b)
+```
+
+### softmax回归
+softmax函数返回一个概率分布,其值在0到1之间,且总和为1.因此softmax回归常用于多类别分类问题.
+#### 图像分类数据集
+使用Fashion-MNIST数据集,该数据集包含70,000张图像,分为10个类别,每张图像高和宽均为28像素.
+```python
+# softmax回归的简洁实现(从零开始实现见工程代码)
+import torch
+from torch import nn
+from d2l import torch as d2l
+
+batch_size = 256
+train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
+
+# PyTorch不会隐式地调整输入的形状。因此，在线性层之前定义展平层（flatten），来调整网络输入的形状
+net = nn.Sequential(nn.Flatten(), nn.Linear(784, 10))
+## nn.Flatten()将输入的多维张量展平为一维向量.如28*28的图像参数向量将被展平为长784的一维向量
+
+def init_weights(m):# 初始化权重
+    if type(m) == nn.Linear:
+        nn.init.normal_(m.weight, std=0.01)
+net.apply(init_weights)
+
+loss = nn.CrossEntropyLoss(reduction='none')
+trainer = torch.optim.SGD(net.parameters(), lr=0.1)
+
+num_epochs = 10
+d2l.train_ch6(net, train_iter, test_iter, num_epochs,0.03, 0)
+# 包里没ch3的trainer了. d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
+```
 ## 多层感知机
 
 ## 卷积神经网络
