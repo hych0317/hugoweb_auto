@@ -275,6 +275,88 @@ d2l.train_ch6(net, train_iter, test_iter, num_epochs,0.03, 0)
 # 包里没ch3的trainer了. d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
 ```
 ## 多层感知机
+### 多层感知机的简洁实现
+```python
+# 网络部分写法
+net = nn.Sequential(nn.Flatten(),
+                    nn.Linear(784, 256),
+                    nn.ReLU(),
+                    nn.Linear(256, 10))
+
+def init_weights(m):
+    if type(m) == nn.Linear:
+        nn.init.normal_(m.weight, std=0.01)
+
+net.apply(init_weights)
+```
+### 权重衰减
+权重衰减(weight decay)也被称为L2正则化。使得模型参数不会过大,从而控制复杂度。正则项的权重λ是控制模型复杂度的超参数。
+
+目标函数 = 损失函数 + 正则项：  
+\[{\rm{L(w, b)  +  }}\frac{\lambda }{2}{\left\| w \right\|^2}\]
+使用L2范数的一个原因是它对权重向量的大分量施加了巨大的惩罚。这使得我们的学习算法偏向于在大量特征上均匀分布权重的模型。在实践中,这可能使它们对单个变量中的观测误差更为稳定。
+
+![wdecay.png](post/instruction/wdecay.png)
+坐标轴对应w的取值
+绿点表示L(w, b)的最优点,坐标轴原点表示L2范数的最小值.因此距离这两个点越远,惩罚越大.
+黄点是两者相制衡得到的惩罚函数最小值,即权重衰减的效果.
+
+更新权重:
+\[{{\rm{w}}_{{\rm{t}} + 1}} \leftarrow (1 - \eta \lambda ){{\rm{w}}_{\rm{t}}} - \frac{\eta }{B}\sum {\frac{{\partial L(w,b)}}{{\partial w}}} \]
+注意$(1 - \eta \lambda)$处,表示先对wt做衰减,在进行更新.
+
+### 丢弃法(dropout)
+对每个中间活性值h以暂退概率p由随机变量h′替换。有概率p置零，其余概率扩大1-p倍，从而保证均值不变。
+\[h' = \begin{cases}\frac{h}{1-p}, &\text{以概率 }1-p \\ 0, &\text{以概率 }p\end{cases}\]
+如果通过许多不同的暂退法遮盖后得到的预测结果都是一致的,那么我们可以说网络发挥更稳定。
+
+代码实现：
+```python
+# dropout层，连接在全连接层之后，对输出进行丢弃
+def dropout_layer(X, pdropout):  
+    assert 0 <= pdropout <= 1  
+    # p=1,所有元素都被丢弃  
+    if pdropout == 1:  
+        return torch.zeros_like(X) 
+    # p=0,所有元素都被保留  
+    if pdropout == 0:  
+        return X  
+    mask = (torch.rand(X.shape) > pdropout).float()  
+    return mask * X / (1.0 - pdropout)
+
+# 简洁调用
+nn.Dropout(pdropout)
+```
+
+### 参数初始化
+**Xavier初始化:**
+目的：使得每层的方差相同，从而使得每层的输出方差不变，从而使得每层的输出不受其他层影响。
+
+全连接层输出为oi，该层输入数量为Nin，输出数量为Nout，输入表示为xj，权重表示为wij(不考虑偏置项).
+
+权重wij都是从同一分布中独立抽取的，该分布具有零均值和方差σ2。这并不意味着分布必须是高斯的。
+现在,让我们假设层xj的输入也具有零均值和方差γ2,它们独立于wij并且彼此独立。
+
+将输出进行表示：
+\[o_i = \sum_{j=1}^{N_{in}} w_{ij} x_j\]
+
+则其均值为：
+\[E[o_i] = \sum_{j=1}^{N_{in}} E[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}] E[x_j] = 0\]
+
+方差为：
+\[Var[o_i] = \sum_{j=1}^{N_{in}} Var[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}^2 x_j^2] - 0
+= \sum_{j=1}^{N_{in}} E[w_{ij}^2]E[x_j^2]=N_{in}σ^2γ^2\]
+
+保持方差不变的一种方法是设置$N_{in}σ^2 = 1$;  
+对于反向传播$N_{out}σ^2 = 1$,否则梯度的方差可能会增大.
+
+**因此,需要满足$\frac{1}{2}(N_{in}+N_{out})σ^2 = 1$**
+
+最终确定方差范围后,wij可以从高斯分布或均匀分布中进行采样。
+高斯分布采样范围：
+\[w_{ij} \sim \mathcal{N}(0, \sqrt{\frac{2}{N_{in}+N_{out}}})\]
+均匀分布采样范围：
+\[w_{ij} \sim \mathcal{U}(-\sqrt{\frac{6}{N_{in}+N_{out}}}, \sqrt{\frac{6}{N_{in}+N_{out}}})\]
 
 ## 卷积神经网络
 
