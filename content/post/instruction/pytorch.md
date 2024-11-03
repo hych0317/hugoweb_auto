@@ -74,8 +74,8 @@ torch.norm(A, p=1) # 向量的L1范数,即向量元素绝对值之和
 torch.abs(u).sum() # L1范数的另一种表示形式
 # 矩阵的Frobenius范数(矩阵元素平方和的平方根，类似于向量的L2范数)
 torch.norm(torch.arange(36,dtype=torch.float32).reshape(4, 9))
-
 ```
+
 ### 导数和梯度
 #### 画图
 ```python
@@ -187,15 +187,130 @@ x = x.to(device)
 # 张量转移到CPU
 x = x.to("cpu")
 ```
-#### 层和块
+#### 自定义块
+```python
+# 可以在自定义块中定义模型参数,并在forward函数中使用这些参数
+# 要实现各种层的嵌套,既可以在自定义块的forward函数中嵌套,也可以通过sequential函数来实现
+class MLP(nn.Module):
+    # 用模型参数声明层。这里，我们声明两个全连接的层
+    def __init__(self):
+        super().__init__()# 调用MLP的父类Module的构造函数来执行必要的初始化。
+        # 这样，在类实例化时也可以指定其他函数参数，例如模型参数params（稍后将介绍）
+        self.hidden = nn.Linear(20, 256)  # 隐藏层
+        self.out = nn.Linear(256, 10)  # 输出层
+
+    # 定义模型的前向传播，即如何根据输入X返回所需的模型输出
+    def forward(self, X):
+        # 注意，这里我们使用ReLU的函数版本，其在nn.functional模块中定义。
+        return self.out(F.relu(self.hidden(X)))
+```
+
+#### 自定义顺序块
+```python
+# 对应nn.Sequential函数
+class MySequential(nn.Module):
+    def __init__(self, *args):
+        super().__init__()
+        for idx, module in enumerate(args):
+            # 这里，module是Module子类的一个实例。我们把它保存在'Module'类的成员
+            # 变量_modules中。_module的类型是OrderedDict
+            self._modules[str(idx)] = module# 该属性存放了各个连接模块的ID
+
+    def forward(self, X):
+        # OrderedDict保证了按照成员添加的顺序遍历它们
+        for block in self._modules.values():
+            X = block(X)# 按顺序传递值
+        return X
+
+net = MySequential(nn.Linear(20, 256), nn.ReLU(), nn.Linear(256, 10))
+# 将两个全连接层与一个ReLU层连接在一起
+```
 
 #### 参数管理
+```python
+# 参数访问
+net = nn.Sequential(nn.Linear(4, 8), nn.ReLU(), nn.Linear(8, 1))
+X = torch.rand(size=(2, 4))
 
-#### 延迟初始化
+print(net[2].state_dict())# 访问nn.Linear(8, 1)的参数
+print(*[(name, param.shape) for name, param in net.named_parameters()])# 访问所有参数
+```
+
+#### 参数初始化
+##### Xavier初始化原理
+目的：使得每层的方差相同，从而使得每层的输出方差不变，从而使得每层的输出不受其他层影响。
+
+全连接层输出为oi，该层输入数量为Nin，输出数量为Nout，输入表示为xj，权重表示为wij(不考虑偏置项).
+
+权重wij都是从同一分布中独立抽取的，该分布具有零均值和方差σ2。这并不意味着分布必须是高斯的。
+现在,让我们假设层xj的输入也具有零均值和方差γ2,它们独立于wij并且彼此独立。
+
+将输出进行表示：
+\[o_i = \sum_{j=1}^{N_{in}} w_{ij} x_j\]
+则其均值为：
+\[E[o_i] = \sum_{j=1}^{N_{in}} E[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}] E[x_j] = 0\]
+
+方差为：
+\[Var[o_i] = \sum_{j=1}^{N_{in}} Var[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}^2 x_j^2] - 0
+= \sum_{j=1}^{N_{in}} E[w_{ij}^2]E[x_j^2]=N_{in}σ^2γ^2\]
+
+保持方差不变的一种方法是设置$N_{in}σ^2 = 1$;  
+对于反向传播$N_{out}σ^2 = 1$,否则梯度的方差可能会增大.
+
+**因此,需要满足$\frac{1}{2}(N_{in}+N_{out})σ^2 = 1$**
+
+最终确定方差范围后,wij可以从高斯分布或均匀分布中进行采样。
+高斯分布采样范围：
+\[w_{ij} \sim \mathcal{N}(0, \sqrt{\frac{2}{N_{in}+N_{out}}})\]
+均匀分布采样范围：
+\[w_{ij} \sim \mathcal{U}(-\sqrt{\frac{6}{N_{in}+N_{out}}}, \sqrt{\frac{6}{N_{in}+N_{out}}})\]
+```python
+nn.init.xavier_uniform_(net.weight)# 函数会自行计算范围，只需传入要初始化的网络权重
+```
+
+##### 关于net.apply
+```python
+def init_normal(m):
+    if type(m) == nn.Linear:
+        nn.init.normal_(m.weight, mean=0, std=0.01)
+        nn.init.zeros_(m.bias)
+```
+>对于net = nn.Sequential(nn.Linear(4, 8), nn.ReLU(), nn.Linear(8, 1))使用net.apply(init_normal)和init_normal(net)会有什么区别?  
+
+net.apply(init_normal)会递归地遍历模型中的每一层，并对每一层调用init_normal函数;  
+而init_normal(net)把整个net模型作为参数传递过去,又因为net的类型是sequential,所以会导致类型错误.
 
 #### 自定义层
 ```python
+# 不带参数的自定义层
+# 功能:将输入减去均值,不需要指定网络参数,自适应输入的形状
+class CenteredLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
 
+    def forward(self, X):
+        return X - X.mean()
+
+# 带参数的自定义层
+# 创建了一个具有in_units输入单元数和out_units输出单元数的线性层,并通过ReLU后输出
+class MyLinear(nn.Module):
+    def __init__(self, in_units, units):
+        super().__init__()
+        self.weight = nn.Parameter(torch.randn(in_units, out_units))
+        self.bias = nn.Parameter(torch.randn(out_units,))
+    def forward(self, X):
+        linear = torch.matmul(X, self.weight.data) + self.bias.data
+        return F.relu(linear)
+```
+
+#### 保存和加载模型
+```python
+# 保存模型(张量、list、dict等均可)
+net = MLP()
+torch.save(net.state_dict(), 'net.params')
+# 加载模型
+clone_net = MLP()
+clone_net.load_state_dict(torch.load('net.params'))
 ```
 
 ## 线性神经网络
@@ -274,6 +389,7 @@ num_epochs = 10
 d2l.train_ch6(net, train_iter, test_iter, num_epochs,0.03, 0)
 # 包里没ch3的trainer了. d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
 ```
+
 ## 多层感知机
 ### 多层感知机的简洁实现
 ```python
@@ -289,6 +405,7 @@ def init_weights(m):
 
 net.apply(init_weights)
 ```
+
 ### 权重衰减
 权重衰减(weight decay)也被称为L2正则化。使得模型参数不会过大,从而控制复杂度。正则项的权重λ是控制模型复杂度的超参数。
 
@@ -328,35 +445,6 @@ def dropout_layer(X, pdropout):
 nn.Dropout(pdropout)
 ```
 
-### 参数初始化
-**Xavier初始化:**
-目的：使得每层的方差相同，从而使得每层的输出方差不变，从而使得每层的输出不受其他层影响。
-
-全连接层输出为oi，该层输入数量为Nin，输出数量为Nout，输入表示为xj，权重表示为wij(不考虑偏置项).
-
-权重wij都是从同一分布中独立抽取的，该分布具有零均值和方差σ2。这并不意味着分布必须是高斯的。
-现在,让我们假设层xj的输入也具有零均值和方差γ2,它们独立于wij并且彼此独立。
-
-将输出进行表示：
-\[o_i = \sum_{j=1}^{N_{in}} w_{ij} x_j\]
-
-则其均值为：
-\[E[o_i] = \sum_{j=1}^{N_{in}} E[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}] E[x_j] = 0\]
-
-方差为：
-\[Var[o_i] = \sum_{j=1}^{N_{in}} Var[w_{ij} x_j] = \sum_{j=1}^{N_{in}} E[w_{ij}^2 x_j^2] - 0
-= \sum_{j=1}^{N_{in}} E[w_{ij}^2]E[x_j^2]=N_{in}σ^2γ^2\]
-
-保持方差不变的一种方法是设置$N_{in}σ^2 = 1$;  
-对于反向传播$N_{out}σ^2 = 1$,否则梯度的方差可能会增大.
-
-**因此,需要满足$\frac{1}{2}(N_{in}+N_{out})σ^2 = 1$**
-
-最终确定方差范围后,wij可以从高斯分布或均匀分布中进行采样。
-高斯分布采样范围：
-\[w_{ij} \sim \mathcal{N}(0, \sqrt{\frac{2}{N_{in}+N_{out}}})\]
-均匀分布采样范围：
-\[w_{ij} \sim \mathcal{U}(-\sqrt{\frac{6}{N_{in}+N_{out}}}, \sqrt{\frac{6}{N_{in}+N_{out}}})\]
 
 ## 卷积神经网络
 
