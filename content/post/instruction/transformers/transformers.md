@@ -1,12 +1,14 @@
 +++
-title = 'Machine Learning'
-date = 2024-10-31T15:34:07+08:00
+title = 'Transformers'
+date = 2024-10-26T15:34:07+08:00
 draft = false
 categories = ['instruction']
 +++
 
 
 ## 基础部件
+基本流程：
+![steps](post/transformers/step.png)
 ### tokenizer
 ```python
 from transformers import AutoTokenizer
@@ -226,4 +228,18 @@ trainer.evaluate(tokenized_datasets["test"])
 trainer.predict(tokenized_datasets["test"])
 
 ```
-## 参考
+
+## NLP任务
+
+### 命名实体识别(NER)
+NER是指识别文本中的实体，如人名、地名、机构名等。  
+通常，NER任务包括两部分:
+- 实体识别: 识别出文本中的实体，并给予其相应的标签。
+- 实体分类: 将识别出的实体进行分类，如人名、地名、机构名等。
+
+##  微调
+
+
+## 低精度训练
+
+## 分布式训练

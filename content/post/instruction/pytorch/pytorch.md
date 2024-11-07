@@ -413,7 +413,7 @@ net.apply(init_weights)
 \[{\rm{L(w, b)  +  }}\frac{\lambda }{2}{\left\| w \right\|^2}\]
 使用L2范数的一个原因是它对权重向量的大分量施加了巨大的惩罚。这使得我们的学习算法偏向于在大量特征上均匀分布权重的模型。在实践中,这可能使它们对单个变量中的观测误差更为稳定。
 
-![wdecay.png](post/instruction/wdecay.png)
+![wdecay.png](post/instruction/pytorch/wdecay.png)
 坐标轴对应w的取值
 绿点表示L(w, b)的最优点,坐标轴原点表示L2范数的最小值.因此距离这两个点越远,惩罚越大.
 黄点是两者相制衡得到的惩罚函数最小值,即权重衰减的效果.
