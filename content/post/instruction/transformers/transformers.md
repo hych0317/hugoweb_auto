@@ -8,7 +8,7 @@ categories = ['instruction']
 
 ## 基础部件
 基本流程：
-![steps](post/transformers/step.png)
+![steps](post/transformers/steps.png)
 ### tokenizer
 ```python
 from transformers import AutoTokenizer

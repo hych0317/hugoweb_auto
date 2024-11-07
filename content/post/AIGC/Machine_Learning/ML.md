@@ -1,5 +1,6 @@
 +++
 title = 'Machine Learning'
+description = 'This is a machine learning note.'
 date = 2024-10-21T15:34:07+08:00
 draft = false
 categories = ['AIGC']
