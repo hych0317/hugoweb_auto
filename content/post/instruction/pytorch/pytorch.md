@@ -2,7 +2,7 @@
 title = 'Pytorch'
 date = 2024-10-21T15:34:07+08:00
 draft = false
-categories = ['instruction']
+categories = ['指令语法']
 +++
 
 ## 数据操作

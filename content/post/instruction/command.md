@@ -1,5 +1,5 @@
 +++
-title = '命令行指令'
+title = 'bash/cmd指令'
 description = '包含Linux、Conda、vim'
 date = 2024-08-22T14:26:16+08:00
 draft = false
@@ -36,6 +36,12 @@ categories = ['指令语法']
 - netstat：查看网络连接信息
 - ssh：远程登录
 - scp：远程复制文件
+- bark通知：
+    ```python
+    import requests
+
+    r = requests.get('https://api.day.app/yPjmWKqbWBcYB4tWbAVk8/<test title>/<test content>/?group=<wow1>/?level=timeSensitive')
+    ```
 
 ### vim
 vim有两种模式：命令模式和编辑模式。

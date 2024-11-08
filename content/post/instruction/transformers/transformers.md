@@ -2,7 +2,7 @@
 title = 'Transformers'
 date = 2024-10-26T15:34:07+08:00
 draft = false
-categories = ['instruction']
+categories = ['指令语法']
 +++
 
 
