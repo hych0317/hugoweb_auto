@@ -1,9 +1,9 @@
 +++
 title = '报错总结'
-date = 2024-11-15T14:21:14+08:00
+date = 2024-11-21T14:21:14+08:00
 draft = false
 categories=['conclusion']
-description = '总结刁钻/麻烦的报错及解决方法，一般容易搜到的不记载'
+description = '总结刁钻/麻烦的报错及解决方法，容易搜到的一般不记载'
 +++
 
 ## 环境错误
