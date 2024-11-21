@@ -2,7 +2,7 @@
 title = '生涯规划|职业规划'
 date = 2024-08-24T21:01:10+08:00
 draft = false
-categories = ['trend']
+categories = ['conclusion']
 +++
 
 ## 科研

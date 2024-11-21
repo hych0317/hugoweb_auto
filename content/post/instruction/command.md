@@ -24,12 +24,33 @@ categories = ['指令语法']
 
 ### 进程管理
 - ps -ef：查看进程（UID用户标识号，PID进程标识号，PPID父进程标识号，CMD命令）
-- top：实时显示进程信息
+- ps -ef | grep <PID>:可以查看子父进程之间的关系
+- pstree -p PID：查看进程树
+- top -d -i -p：实时显示进程信息(-d：更新显示；-i：不显示闲置进程；-p：指定进程ID)
 - who：查看登录用户
 - kill -s PID：杀死进程
     -9:强制杀死进程
     -15:正常杀死进程
     杀死指定用户进程：kill -9 $(ps -ef | grep user_name)或kill -u user_name
+
+### pip
+- pip install <package_name> -i <镜像源>  --no-deps(不自动调整其他包版本)：安装包
+    镜像源:
+    -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
+    -i https://pypi.doubanio.com/simple/：豆瓣源
+    -i https://mirrors.aliyun.com/pypi/simple/：阿里云源
+
+- pip uninstall package_name：卸载包
+- pip cache purge：清理缓存
+
+- pip list：查看已安装的包
+- pip show package_name：查看包信息
+- pip check：检查依赖版本是否一致
+
+- pip list --format=freeze > requirements.txt
+    按版本号导出依赖（更建议导出conda环境）
+- pip install -r requirements.txt：导入依赖
+    对应conda install --file requirements.txt
 
 ### 网络管理
 - ifconfig：查看网络接口信息
@@ -58,17 +79,6 @@ vim有两种模式：命令模式和编辑模式。
 
 编辑模式：按下i进入编辑模式，按下ESC进入命令模式。
 
-### pip
-- pip install -i <镜像源> <package_name>：安装包
-    镜像源:
-    -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
-    -i https://pypi.doubanio.com/simple/：豆瓣源
-    -i https://mirrors.aliyun.com/pypi/simple/：阿里云源
-
-- pip uninstall package_name：卸载包
-- pip list：查看已安装的包
-- pip freeze > requirements.txt：导出依赖
-- pip install -r requirements.txt：导入依赖
 
 ## Conda
 ### 环境操作

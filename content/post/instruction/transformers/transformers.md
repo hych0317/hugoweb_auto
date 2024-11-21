@@ -229,7 +229,7 @@ trainer.predict(tokenized_datasets["test"])
 
 ```
 
-## NLP任务
+## NLP任务实操
 
 ### 命名实体识别(NER)
 NER是指识别文本中的实体，如人名、地名、机构名等。  
@@ -237,9 +237,179 @@ NER是指识别文本中的实体，如人名、地名、机构名等。
 - 实体识别: 识别出文本中的实体，并给予其相应的标签。
 - 实体分类: 将识别出的实体进行分类，如人名、地名、机构名等。
 
-##  微调
+##  PEFT微调
+在创建模型后设置tuning_config,随后model = get_peft_model(model, config)  
+
+>常见高效微调方法综述见arXiv:2303.15647
+
+### Prompt tuning
+```python
+from peft import PromptTuningConfig, get_peft_model, TaskType, PromptTuningInit
+# Hard Prompt
+config = PromptTuningConfig(task_type=TaskType.CAUSAL_LM,
+                            prompt_tuning_init=PromptTuningInit.TEXT,
+                            prompt_tuning_init_text="下面是一段人与机器人的对话。",
+                            num_virtual_tokens=len(tokenizer("下面是一段人与机器人的对话。")["input_ids"]),
+                            tokenizer_name_or_path="Langboat/bloom-1b4-zh")
+model = get_peft_model(model, config)
+
+# 进行训练...
+
+# 加载训练完的模型
+from peft import PeftModel
+model = AutoModelForCausalLM.from_pretrained("Langboat/bloom-1b4-zh")# 原模型
+peft_model = PeftModel.from_pretrained(model=model, model_id="./output/checkpoint-500/")
+```
+
+### P-tuning/Prefix tuning
+P-tuning把prompt加在输入embedding层的前缀，而Prefix tuning将kv值作为前缀加在模型的每一层前，而不仅仅是输入层。  
+![prefix tuning](post/instruction/transformers/prefix.png)
+
+原理(类似kv缓存的思想):
+![prefix tuning](post/instruction/transformers/prefix_kvcache.png)
+因为对于扩展后的KV矩阵，Qm\*n,K(m+x)\*n,V(m+x)\*n而言,Q·KT得m\*(m+k)维矩阵，再乘V得m\*n维矩阵，和原矩阵相乘维度一样。  
+```python
+from peft import PrefixTuningConfig, get_peft_model, TaskType
+config = PrefixTuningConfig(task_type=TaskType.CAUSAL_LM, num_virtual_tokens=10, prefix_projection=True)
+# prefix_projection默认值为false，表示使用P-Tuning v2， 如果为true，则表示使用 Prefix Tuning
+# 其余流程一致
+```
+
+### Lora
+通过矩阵分解的方式，将原始权重分解为低秩矩阵，计算时仅优化低秩矩阵，最后把低秩矩阵相乘加到原始权重上作为微调结果。 
+
+```python
+from peft import LoraConfig, TaskType, get_peft_model
+
+# 查看target_modules参数要分解的权重层,该参数课传入列表如:
+# ["word_embeddings", "encoder.layer.0.attention.self.query", "encoder.layer.0.attention.self.key", "encoder.layer.0.attention.self.value"]
+# 也可以传入正则表达式如下
+for name, parameter in model.named_parameters():
+    print(name)
+
+config = LoraConfig(task_type=TaskType.CAUSAL_LM, target_modules=".*\.1.*query_key_value", modules_to_save=["word_embeddings"])# modules_to_save表示其它要参与训练的权重层
+
+model = get_peft_model(model, config)
+
+# 进行训练...
+
+# 加载训练完的模型
+from peft import PeftModel
+model = AutoModelForCausalLM.from_pretrained("Langboat/bloom-1b4-zh")
+tokenizer = AutoTokenizer.from_pretrained("Langboat/bloom-1b4-zh")
+
+peft_model = PeftModel.from_pretrained(model=model, model_id="./output/checkpoint-500/")
+# 合并模型
+# peft_model和merge_model的权重相同，p的预训练模型和LoRA微调权重是分开的,LoRA权重在推理时动态加载;而m是成为一个新的完全体模型
+merge_model = peft_model.merge_and_unload()
+merge_model.save_pretrained("./output/merge_model")# 保存模型
+```
+
+### IA3
+```python
+# 仅记录调用方法
+from peft import IA3Config, TaskType, get_peft_model
+config = IA3Config(task_type=TaskType.CAUSAL_LM)
+```
+
+### 使用不同适配器
+```python
+import torch
+from torch import nn
+from peft import LoraConfig, get_peft_model, PeftModel
+
+net1 = nn.Sequential(
+    nn.Linear(10, 10),
+    nn.ReLU(),
+    nn.Linear(10, 2)
+)
+# 对层0进行Lora微调
+config1 = LoraConfig(target_modules=["0"])
+model1 = get_peft_model(net1, config1)
+model1.save_pretrained("./loraA")
+print(model1)
+# 对层2进行Lora微调
+config2 = LoraConfig(target_modules=["2"])
+model2 = get_peft_model(net1, config2)
+model2.save_pretrained("./loraB")
+print(model2)
+# 此时model2会显示层0,层2都被lora,因为net1会记录被A调整的部分
+# 但是!!!经验证,实际上loraB只记录了层2的权重调整,因为model2的输入是net1+loraA,输出是net1+loraA+loraB,所以loraB只记录了层2的权重
+
+net1 = nn.Sequential(
+    nn.Linear(10, 10),
+    nn.ReLU(),
+    nn.Linear(10, 2)
+)# 上面的net1被使用后调整了,重新定义原网络
+
+# 使用原网络和保存的loraA参数得到PeftModel
+model3 = PeftModel.from_pretrained(net1, model_id="./loraA/", adapter_name="loraA")# 此时的模型是net1+loraA(层0的适配器参数)
+model3.active_adapter# 显示当前激活的适配器A
+
+# 改用loraB参数
+model3.load_adapter("./loraB/", adapter_name="loraB")# 加载loraB,实际模型结构是net1+loraA+loraB,激活的结构是net1+loraA(还没切换)
+model3.set_adapter("loraB")# 切换到loraB,loraA被禁用,模型激活结构变为net1+loraB
+model3.active_adapter# 显示当前激活的适配器B
+
+with model3.disable_adapter():
+    <code># 需要使用with语句关闭适配器
+```
 
 
 ## 低精度训练
+默认单精度fp32,每个参数占4Byte.半精度即fp16(更推荐bf16),每个参数占2Byte.  
+### 半精度训练实例
+```python
+model = AutoModelForCausalLM.from_pretrained("<model name>", low_cpu_mem_usage=True, 
+                                             torch_dtype=torch.bfloat16, device_map="auto")# 半精度训练
+# 建议加载时用
+
+model = model.half()
+# 在fine tuning后把调整的参数也转成半精度
+```
+### 量化
+显存占用变少,但是训练推理速度变慢.
+
+INT8 量化即将浮点数$x_f$通过缩放因子scale映射到范围在[-128, 127] 内,用8bit表示即
+\[x_q = Clip(Round(x_f*scale))\]
+其中scale=127/浮点数绝对值最大值;Round是四舍五入;  
+数据中离群值(与其它数值相差很大)的存在会导致丢失很多信息,使用Clip将离群值限制在[-128, 127]范围内.   
+
+反量化的过程为:
+\[x_f = x_q/scale\]
+
+因此可以采取混合精度量化:  
+将包含了Emergent Features的几个维度从矩阵中分离出来，对其做高精度的矩阵乘法；其余数值接近的部分进行量化
+
+
+### 8bit,4bit量化与QLoRA模型训练
+```python
+model = AutoModelForCausalLM.from_pretrained("D:/Pretrained_models/modelscope/Llama-2-7b-ms", low_cpu_mem_usage=True, 
+                                             torch_dtype=torch.bfloat16, device_map="auto", load_in_8bit=True)
+model = AutoModelForCausalLM.from_pretrained("D:/Pretrained_models/modelscope/Llama-2-13b-ms", low_cpu_mem_usage=True, 
+                                             torch_dtype=torch.bfloat16, device_map="auto", load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16,
+                                             bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True)# 启用nf4量化,启用双重量化
+```
 
 ## 分布式训练
+### 各类并行
+data parallel: 每个GPU加载完整的模型,训练的数据不同  
+pipeline parallel: 每个GPU加载模型不同的层  
+tensor parallel: 把同一层的各部分参数拆分到各个GPU上
+
+3D并行:
+![3Dpara](post/instruction/transformers/3Dpara.png)
+图中:2(数据并行)\*4(流水并行|横向箭头,代表不同层)\*4(张量并行|竖向箭头,同层的不同参数)=32GPUs  
+解释:模型32层,每8层分成一个流水并行块;每个流水并行块分成4个张量并行块,每个张量并行块有4个GPU,共16个GPU;再乘以2行数据并行=32GPUs    
+
+### Distributed DataParallel
+![datapara](post/instruction/transformers/datapara.png)
+
+```python
+# 指定使用GPU 0, 1和2（不设置device_ids或令其=None，则默认使用所有GPU）
+model = nn.DataParallel(model, device_ids=[0, 1, 2])
+
+# 在训练时，需要对loss进行mean()，因为loss需要是标量才可以进行反向传播
+```
+
+### Accelerater

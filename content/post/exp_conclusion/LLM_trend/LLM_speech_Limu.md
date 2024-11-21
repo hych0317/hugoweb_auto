@@ -3,7 +3,7 @@ title = 'LLM趋势及个人生涯分享--李沐'
 date = 2024-08-24T21:01:10+08:00
 draft = false
 description = "本文为对李沐老师2024.8.23于上交报告的总结、体会。报告原文保存在本文相同路径下。"
-categories = ['trend']
+categories = ['conclusion']
 +++
 
 ## 第一部分：LLM
