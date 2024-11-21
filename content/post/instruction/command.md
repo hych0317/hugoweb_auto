@@ -34,7 +34,7 @@ categories = ['指令语法']
     杀死指定用户进程：kill -9 $(ps -ef | grep user_name)或kill -u user_name
 
 ### pip
-- pip install <package_name> -i <镜像源>  --no-deps(不自动调整其他包版本)：安装包
+- pip install <package_name> -i <镜像源> --no-deps(不自动调整其他包版本)：安装包
     镜像源:
     -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
     -i https://pypi.doubanio.com/simple/：豆瓣源
@@ -61,7 +61,7 @@ categories = ['指令语法']
     ```python
     import requests
 
-    r = requests.get('https://api.day.app/yPjmWKqbWBcYB4tWbAVk8/<test title>/<test content>/?group=<wow1>/?level=timeSensitive')
+    r = requests.get('https://api.day.app/yPjmWKqbWBcYB4tWbAVk8/<test title>/<test content>/?group=<test group>/?level=timeSensitive')
     ```
 
 ### vim
