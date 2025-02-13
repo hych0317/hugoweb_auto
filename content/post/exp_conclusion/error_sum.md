@@ -28,7 +28,7 @@ torch和torchvision不匹配
 
 ### NVIDIA CUDA
 error：libcusparse.so.12: undefined symbol: __nvJitLinkAddData_12_1, version libnvJitLink.so.12
-一般是重装torch（un、in）解决，还有人提到软链接方法，优先考虑torch安装顺序的原因
+一般是重装torch（pip uninstall、pip install）解决，还有人提到软链接方法，优先考虑torch安装顺序的原因
 
 ### transformers
 

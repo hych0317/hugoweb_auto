@@ -33,13 +33,13 @@ cuda版本等细节见土堆教程。
 
 * huggingface下载：  
 
-    1.
+    1.(推荐)
     ```bash
     sudo apt install aria2
     wget https://hf-mirror.com/hfd/hfd.sh
     chmod +x hfd.sh
     export HF_ENDPOINT=https://hf-mirror.com
-    # 下载模型(可以取消下载后断点重连)
+    # 下载模型(下载速度慢可以取消下载后断点重连)
     ./hfd.sh <model_name> --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
     # 下载数据集
     ./hfd.sh <dataset_name> --dataset --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
