@@ -57,6 +57,10 @@ categories = ['指令语法']
 - netstat：查看网络连接信息
 - ssh：远程登录
 - scp：远程复制文件
+- wget：代理下载文件
+    wget <link> -e "https_proxy=http://"
+- curl：发送HTTP请求
+    curl www.google.com --proxy http://
 - bark通知：
     ```python
     import requests
