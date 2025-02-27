@@ -19,7 +19,7 @@ categories:
 
 ## 克隆
 ```bash
-    git clone {github仓库地址}
+    git clone {github仓库地址} -c http.proxy="http://127.0.0.1:7890"
     # 下载大文件时
     git lfs install
     git lfs clone {github仓库地址}

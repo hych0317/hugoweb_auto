@@ -29,6 +29,7 @@ cuda版本等细节见土堆教程。
 **注意：需要使用git lfs clone以下载模型参数文件。**
 * git lfs install（现已与git clone集成）
     git clone url --depth=1:只下载最近一次commit
+    -c http.proxy="http://127.0.0.1:7890" # 临时代理
     lfs下载大文件时，其文件大小会增加，但进度条百分比和网速会卡住，当下完完整的一个大文件后才更新进度，耐心等待即可。  
 
 * huggingface下载：  

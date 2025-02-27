@@ -28,6 +28,10 @@ categories = ['指令语法']
 - pstree -p PID：查看进程树
 - top -d -i -p：实时显示进程信息(-d：更新显示；-i：不显示闲置进程；-p：指定进程ID)
 - who：查看登录用户
+- screen：创建会话,保持长期运行的进程
+    screen [-S <session_name>] <command>:创建会话并运行指令（命名可选）
+    screen -ls：SSH重连后查看会话
+    screen -r <session_name>
 - kill -s PID：杀死进程
     -9:强制杀死进程
     -15:正常杀死进程
