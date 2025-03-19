@@ -15,7 +15,7 @@ categories=['conclusion']
 
 4. 在防火墙开放7890端口的接入规则，打开Allow LAN，设置port为7890，本机就可以当作代理服务器使用
 
-5. 在linux命令行中使用curl --proxy http://本机IPv4地址:7890 www.google.com测试是否成功
+5. 在linux命令行中使用curl \--proxy http://本机IPv4地址:7890 www.google.com测试是否成功
 
 6. 在命令行/.sh文件中使用
     export http_proxy=http://本机IPv4地址:7890 

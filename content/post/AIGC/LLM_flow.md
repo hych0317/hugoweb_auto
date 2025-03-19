@@ -24,12 +24,13 @@ model = nn.DataParallel(model, device_ids=[0, 1, 2])
 ### pytorch安装
 使用pip安装比conda更靠谱，指令见(<https://pytorch.org/get-started/locally/>)
 cuda版本等细节见土堆教程。
+(pip临时代理： --proxy=http://)
 
 ### 下载预训练模型
 **注意：需要使用git lfs clone以下载模型参数文件。**
-* git lfs install（现已与git clone集成）
-    git clone url --depth=1:只下载最近一次commit
-    -c http.proxy="http://127.0.0.1:7890" # 临时代理
+* git clone  
+    git clone url --depth=1:只下载最近一次commit  
+    (-c http.proxy=\"http://127.0.0.1:7890\" # 临时代理)  
     lfs下载大文件时，其文件大小会增加，但进度条百分比和网速会卡住，当下完完整的一个大文件后才更新进度，耐心等待即可。  
 
 * huggingface下载：  
@@ -42,7 +43,7 @@ cuda版本等细节见土堆教程。
     export HF_ENDPOINT=https://hf-mirror.com
     # 下载模型(下载速度慢可以取消下载后断点重连)
     ./hfd.sh <model_name> --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
-    # 代理：--http-proxy='http://'
+    # 代理：--all-proxy=http://
     # 下载数据集
     ./hfd.sh <dataset_name> --dataset --tool aria2c -x 4 [可选]--hf_username <username> --hf_token <apikey>
     ```
