@@ -5,17 +5,98 @@ draft = false
 categories = ['指令语法']
 +++
 
-## 数据操作
+## 常用概念
+
+### 设备相关
+
+```python
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")# 创建设备
+a = torch.ones(2,3)
+b = a.clone()
+c = a.detach()# 只想使用当前的值,为常数,避免导致原张量梯度更新
+d = a.to(device)# "cuda" / "cpu"
+```
+### 流程简述
+具体网络详解见第三部分  
+```python
+# 1.网络定义
+import torch.nn as nn
+import torch.optim as optim
+# 定义一个简单的全连接神经网络
+class SimpleNN(nn.Module):
+    def __init__(self):
+        super(SimpleNN, self).__init__()
+        self.fc1 = nn.Linear(2, 2)  # 输入层到隐藏层
+        self.fc2 = nn.Linear(2, 1)  # 隐藏层到输出层
+    
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))  # ReLU 激活函数
+        x = self.fc2(x)
+        return x
+
+# 2.创建网络实例
+model = SimpleNN()
+
+# 3. 定义损失函数和优化器
+criterion = nn.MSELoss()  # 均方误差损失函数
+optimizer = optim.Adam(model.parameters(), lr=0.001)  # Adam 优化器
+
+# 4. 假设有训练数据 X 和 Y
+X = torch.randn(10, 2)  # 10 个样本，2 个特征
+Y = torch.randn(10, 1)  # 10 个目标值
+
+# 5. 训练循环
+for epoch in range(100):  # 训练 100 轮
+    optimizer.zero_grad()  # 清空之前的梯度
+    output = model(X)  # 前向传播
+    # output可通过激活函数完成对应任务
+    # import torch.nn.functional as F 
+    # # ReLU 激活
+    # output = F.relu(input_tensor)
+    # # Sigmoid 激活
+    # output = torch.sigmoid(input_tensor)
+    # # Tanh 激活
+    # output = torch.tanh(input_tensor)
+    loss = criterion(output, Y)  # 计算损失
+    loss.backward()  # 反向传播
+    optimizer.step()  # 更新参数
+   
+    # 每 10 轮输出一次损失
+    if (epoch+1) % 10 == 0:
+        print(f'Epoch [{epoch+1}/100], Loss: {loss.item():.4f}')
+
+# 6.评估
+model.eval()  # 设置模型为评估模式
+with torch.no_grad():  # 在评估过程中禁用梯度计算
+    output = model(X_test)
+    loss = criterion(output, Y_test)
+    print(f'Test Loss: {loss.item():.4f}')
+```
+
+
+
+## 张量操作
 
 ### 张量基本操作
+#### 基本属性
+张量tensor：  
+属性：维度，形状，数据类型  
+0维即单个数字，一维即一维数组  
+形状指每个维度的大小，如(3,4)表示三行四列  
+
+另还有维度数.dim(),启用梯度计算.requires_grad,获取元素总数.numel()等
+
 ```python
 import torch
 # 1. 创建张量
 x = torch.tensor([[1, 2, 3],[4,5,6]])
 x0 = torch.zeros(2, 3)
 x1 = torch.ones(2, 3)
-xr = torch.rand(2, 3)
+xr = torch.randn(2, 3)# rand随机，randn服从正态分布
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+xd = torch.rand(2, 3, device = device)
 X = torch.arange(12, dtype=torch.float32).reshape(3,4)# 指定个数\类型\形状
+tensor_3d = torch.stack([xd,xd+3,xd+5])# 3维张量即三个二维的堆叠，用stack
 # 2. 改变形状
 xrs = x.reshape(3, 2)
 print(y)
@@ -39,6 +120,23 @@ a = torch.tensor([[1], [2], [3]])
 b = torch.tensor([4, 5])
 print(a + b)# 输出 tensor([[5, 6],[6, 7],[7, 8]])
 ```
+#### 张量操作
+    torch.matmul(x, y)	矩阵乘法
+    torch.dot(x, y)	向量点积（仅适用于 1D 张量）
+    torch.sum(x)	求和
+    torch.mean(x)	求均值
+    torch.max(x)	求最大值
+    torch.min(x)	求最小值
+    torch.argmax(x, dim)	返回最大值的索引（指定维度）
+    torch.softmax(x, dim)   计算softmax（指定维度）
+
+#### 形状操作
+    x.view(shape)	改变张量的形状（不改变数据）
+    x.reshape(shape)	类似于 view，但更灵活
+    x.t()	转置矩阵
+    x.unsqueeze(dim)	在指定维度添加一个维度，如x从[N]变成[N,1]
+    x.squeeze(dim)	去掉指定维度为 1 的维度
+    torch.cat((x, y), dim)	按指定维度连接多个张量
 
 ### 线性代数
 ```python
@@ -313,6 +411,81 @@ clone_net = MLP()
 clone_net.load_state_dict(torch.load('net.params'))
 ```
 
+## 数据加载与处理
+### Dataset & Dataloader
+torch.utils.data.Dataset：数据集的抽象类，需要自定义并实现 __len__（数据集大小）和 __getitem__（按索引获取样本）  
+torch.utils.data.DataLoader：封装 Dataset 的迭代器，提供批处理batch_size、数据打乱shuffle=True、多线程加载num_workers等功能，便于数据输入模型训练  
+
+```python
+import torch
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
+
+# 自定义数据集
+class MyDataset(Dataset):
+    def __init__(self, data, labels):
+        # 数据初始化
+        self.data = data
+        self.labels = labels
+
+    def __len__(self):
+        # 返回数据集大小
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # 按索引返回数据和标签
+        sample = self.data[idx]
+        label = self.labels[idx]
+        return sample, label
+
+# 生成示例数据
+data = torch.randn(100, 5)  # 100 个样本，每个样本有 5 个特征
+labels = torch.randint(0, 2, (100,))  # 100 个标签，取值为 0 或 1
+
+# 实例化数据集
+dataset = MyDataset(data, labels)
+
+# 创建 DataLoader 实例，batch_size 设置每次加载的样本数量
+dataloader = DataLoader(dataset, batch_size=10, shuffle=True, num_workers=0)
+# 遍历 DataLoader
+for batch_idx, (batch_data, batch_labels) in enumerate(dataloader):
+    print(f"批次 {batch_idx + 1}")
+    print("数据:", batch_data)
+    print("标签:", batch_labels)
+    if batch_idx == 2:  # 仅显示前 3 个批次
+        break
+```
+
+### 数据转换
+torchvision.transforms提供了基本的数据预处理（如归一化、大小调整等），还能帮助进行数据增强（如随机裁剪、翻转等），提高模型的泛化能力。  
+
+基础变换操作：  
+    transforms.ToTensor()	将PIL图像或NumPy数组转换为PyTorch张量，并自动将像素值从[0, 255]归一化到 [0, 1]。	transform = transforms.ToTensor()
+    transforms.Normalize(mean, std)	对图像进行标准化，使数据符合零均值和单位方差。	transform = transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
+    transforms.Resize(size)	调整图像尺寸，确保输入到网络的图像大小一致。	transform = transforms.Resize((256, 256))
+    transforms.CenterCrop(size)	从图像中心裁剪指定大小的区域。	transform = transforms.CenterCrop(224)
+
+数据增强操作：
+    transforms.RandomHorizontalFlip(p)	随机水平翻转图像。	transform = transforms.RandomHorizontalFlip(p=0.5)
+    transforms.RandomRotation(degrees)	随机旋转图像。	transform = transforms.RandomRotation(degrees=45)
+    transforms.ColorJitter(brightness, contrast, saturation, hue)	调整图像的亮度、对比度、饱和度和色调。	transform = transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)
+    transforms.RandomCrop(size)	随机裁剪指定大小的区域。	transform = transforms.RandomCrop(224)
+    transforms.RandomResizedCrop(size)	随机裁剪图像并调整到指定大小。	transform = transforms.RandomResizedCrop(224)
+
+自定义转换：
+```python
+class CustomTransform:
+    def __call__(self, x):
+        # 这里可以自定义任何变换逻辑
+        return x * 2
+
+transform = CustomTransform()
+```
+
+组合变换：
+    transforms.Compose()	将多个变换组合在一起，按照顺序依次应用。	
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), transforms.Resize((256, 256))])
+
 ## 线性神经网络
 ### 线性回归的简洁实现
 ```python
@@ -390,7 +563,7 @@ d2l.train_ch6(net, train_iter, test_iter, num_epochs,0.03, 0)
 # 包里没ch3的trainer了. d2l.train_ch3(net, train_iter, test_iter, loss, num_epochs, trainer)
 ```
 
-## 多层感知机
+## 多层感知机MLP
 ### 多层感知机的简洁实现
 ```python
 # 网络部分写法
@@ -446,11 +619,275 @@ nn.Dropout(pdropout)
 ```
 
 
-## 卷积神经网络
+## 卷积神经网络CNN
+CNN专门用于处理具有网格状拓扑结构数据（如图像）  
+部分主要流程：(卷积-池化)*N-展平-分类
+```python
+class SimpleCNN(nn.Module):
+    def __init__(self):
+        super(SimpleCNN, self).__init__()
+        # 定义卷积层：输入1通道，输出32通道，卷积核大小3x3
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+        # 定义卷积层：输入32通道，输出64通道
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        # 定义全连接层
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)  # 输入大小 = 特征图大小 * 通道数
+        self.fc2 = nn.Linear(128, 10)  # 10 个类别
 
-## 循环神经网络
+    def forward(self, x):
+        x = F.relu(self.conv1(x))  # 第一层卷积 + ReLU
+        x = F.max_pool2d(x, 2)     # 最大池化
+        x = F.relu(self.conv2(x))  # 第二层卷积 + ReLU
+        x = F.max_pool2d(x, 2)     # 最大池化
+        x = x.view(-1, 64 * 7 * 7) # 展平操作
+        x = F.relu(self.fc1(x))    # 全连接层 + ReLU
+        x = self.fc2(x)            # 全连接层输出
+        return x
+```
 
-## 注意力机制
+## 循环神经网络RNN
+RNN专门用于处理序列数据，能够捕捉时间序列或有序数据的动态信息，如文本、时间序列或音频  
+```python
+class SimpleRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(SimpleRNN, self).__init__()
+        # 定义 RNN 层
+        self.rnn = nn.RNN(input_size, hidden_size, batch_first=True)
+        # 定义全连接层
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        # x: (batch_size, seq_len, input_size)
+        out, _ = self.rnn(x)  # out: (batch_size, seq_len, hidden_size)
+        # 取序列最后一个时间步的输出作为模型的输出
+        out = out[:, -1, :]  # (batch_size, hidden_size)
+        out = self.fc(out)  # 全连接层
+        return out
+```
+
+## Transformer
+实际使用时，可以直接调用nn.embedding、nn.Transformer、nn.positional_encoding层构成模型，无需自己编写  
+```python
+class TransformerModel(nn.Module):
+    def __init__(self, input_dim, model_dim, num_heads, num_layers, output_dim):
+        super(TransformerModel, self).__init__()
+        self.embedding = nn.Embedding(input_dim, model_dim)
+        self.positional_encoding = nn.Parameter(torch.zeros(1, 1000, model_dim))  # 假设序列长度最大为1000
+        self.transformer = nn.Transformer(d_model=model_dim, nhead=num_heads, num_encoder_layers=num_layers)
+        self.fc = nn.Linear(model_dim, output_dim)
+
+    def forward(self, src, tgt):
+        src_seq_length, tgt_seq_length = src.size(1), tgt.size(1)
+        src = self.embedding(src) + self.positional_encoding[:, :src_seq_length, :]# 取实际序列长度的部分
+        tgt = self.embedding(tgt) + self.positional_encoding[:, :tgt_seq_length, :]
+        transformer_output = self.transformer(src, tgt)
+        output = self.fc(transformer_output)
+        return output
+```
+下面为自己实现各模块：  
+### 注意力机制
+```python
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads):
+        super(MultiHeadAttention, self).__init__()
+        assert d_model % num_heads == 0, "d_model必须能被num_heads整除"
+        
+        self.d_model = d_model    # 模型维度（如512）
+        self.num_heads = num_heads # 注意力头数（如8）
+        self.d_k = d_model // num_heads # 每个头的维度（如64）
+        
+        # 定义线性变换层（无需偏置）
+        self.W_q = nn.Linear(d_model, d_model) # 查询变换
+        self.W_k = nn.Linear(d_model, d_model) # 键变换
+        self.W_v = nn.Linear(d_model, d_model) # 值变换
+        self.W_o = nn.Linear(d_model, d_model) # 输出变换
+        
+    def scaled_dot_product_attention(self, Q, K, V, mask=None):
+        """
+        计算缩放点积注意力
+        输入形状：
+            Q: (batch_size, num_heads, seq_length, d_k)
+            K, V: 同Q
+        输出形状： (batch_size, num_heads, seq_length, d_k)
+        """
+        # 计算注意力分数（Q和K的点积）
+        attn_scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
+        
+        # 应用掩码（如填充掩码或未来信息掩码）
+        if mask is not None:
+            attn_scores = attn_scores.masked_fill(mask == 0, -1e9)
+        
+        # 计算注意力权重（softmax归一化）
+        attn_probs = torch.softmax(attn_scores, dim=-1)
+        
+        # 对值向量加权求和
+        output = torch.matmul(attn_probs, V)
+        return output
+        
+    def split_heads(self, x):
+        """
+        将输入张量分割为多个头
+        输入形状: (batch_size, seq_length, d_model)
+        输出形状: (batch_size, num_heads, seq_length, d_k)
+        """
+        batch_size, seq_length, d_model = x.size()
+        return x.view(batch_size, seq_length, self.num_heads, self.d_k).transpose(1, 2)
+        
+    def combine_heads(self, x):
+        """
+        将多个头的输出合并回原始形状
+        输入形状: (batch_size, num_heads, seq_length, d_k)
+        输出形状: (batch_size, seq_length, d_model)
+        """
+        batch_size, _, seq_length, d_k = x.size()
+        return x.transpose(1, 2).contiguous().view(batch_size, seq_length, self.d_model)
+        
+    def forward(self, Q, K, V, mask=None):
+        """
+        前向传播
+        输入形状: Q/K/V: (batch_size, seq_length, d_model)
+        输出形状: (batch_size, seq_length, d_model)
+        """
+        # 线性变换并分割多头
+        Q = self.split_heads(self.W_q(Q)) # (batch, heads, seq_len, d_k)
+        K = self.split_heads(self.W_k(K))
+        V = self.split_heads(self.W_v(V))
+        
+        # 计算注意力
+        attn_output = self.scaled_dot_product_attention(Q, K, V, mask)
+        
+        # 合并多头并输出变换
+        output = self.W_o(self.combine_heads(attn_output))
+        return output
+```
+### 位置编码
+```python
+class PositionWiseFeedForward(nn.Module):
+    def __init__(self, d_model, d_ff):
+        super(PositionWiseFeedForward, self).__init__()
+        self.fc1 = nn.Linear(d_model, d_ff)  # 第一层全连接
+        self.fc2 = nn.Linear(d_ff, d_model)  # 第二层全连接
+        self.relu = nn.ReLU()  # 激活函数
+
+    def forward(self, x):
+        # 前馈网络的计算
+        return self.fc2(self.relu(self.fc1(x)))
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_seq_length):
+        super(PositionalEncoding, self).__init__()
+        pe = torch.zeros(max_seq_length, d_model)  # 初始化位置编码矩阵
+        position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)  # 偶数位置使用正弦函数
+        pe[:, 1::2] = torch.cos(position * div_term)  # 奇数位置使用余弦函数
+        self.register_buffer('pe', pe.unsqueeze(0))  # 注册为缓冲区
+        
+    def forward(self, x):
+        # 将位置编码添加到输入中
+        return x + self.pe[:, :x.size(1)]
+```
+### Encoder
+```python
+class EncoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout):
+        super(EncoderLayer, self).__init__()
+        self.self_attn = MultiHeadAttention(d_model, num_heads)  # 自注意力机制
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff)  # 前馈网络
+        self.norm1 = nn.LayerNorm(d_model)  # 层归一化
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)  # Dropout
+        
+    def forward(self, x, mask):
+        # 自注意力机制
+        attn_output = self.self_attn(x, x, x, mask)
+        x = self.norm1(x + self.dropout(attn_output))  # 残差连接和层归一化
+        
+        # 前馈网络
+        ff_output = self.feed_forward(x)
+        x = self.norm2(x + self.dropout(ff_output))  # 残差连接和层归一化
+        return x
+```
+
+### Decoder
+```python
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout):
+        super(DecoderLayer, self).__init__()
+        self.self_attn = MultiHeadAttention(d_model, num_heads)  # 自注意力机制
+        self.cross_attn = MultiHeadAttention(d_model, num_heads)  # 交叉注意力机制
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff)  # 前馈网络
+        self.norm1 = nn.LayerNorm(d_model)  # 层归一化
+        self.norm2 = nn.LayerNorm(d_model)
+        self.norm3 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)  # Dropout
+        
+    def forward(self, x, enc_output, src_mask, tgt_mask):
+        # 自注意力机制
+        attn_output = self.self_attn(x, x, x, tgt_mask)
+        x = self.norm1(x + self.dropout(attn_output))  # 残差连接和层归一化
+        
+        # 交叉注意力机制
+        attn_output = self.cross_attn(x, enc_output, enc_output, src_mask)
+        x = self.norm2(x + self.dropout(attn_output))  # 残差连接和层归一化
+        
+        # 前馈网络
+        ff_output = self.feed_forward(x)
+        x = self.norm3(x + self.dropout(ff_output))  # 残差连接和层归一化
+        return x
+```
+
+### 整体架构
+```python
+class Transformer(nn.Module):
+    def __init__(self, src_vocab_size, tgt_vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length, dropout):
+        super(Transformer, self).__init__()
+        self.encoder_embedding = nn.Embedding(src_vocab_size, d_model)  # 编码器词嵌入
+        self.decoder_embedding = nn.Embedding(tgt_vocab_size, d_model)  # 解码器词嵌入
+        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)  # 位置编码
+
+        # 编码器和解码器层
+        self.encoder_layers = nn.ModuleList([EncoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
+        self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
+
+        self.fc = nn.Linear(d_model, tgt_vocab_size)  # 最终的全连接层
+        self.dropout = nn.Dropout(dropout)  # Dropout
+
+    def generate_mask(self, src, tgt):
+        # 源掩码：屏蔽填充符（假设填充符索引为0）
+        # 形状：(batch_size, 1, 1, seq_length)
+        src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
+    
+        # 目标掩码：屏蔽填充符和未来信息
+        # 形状：(batch_size, 1, seq_length, 1)
+        tgt_mask = (tgt != 0).unsqueeze(1).unsqueeze(3)
+        seq_length = tgt.size(1)
+        # 生成上三角矩阵掩码，防止解码时看到未来信息
+        nopeak_mask = (1 - torch.triu(torch.ones(1, seq_length, seq_length), diagonal=1)).bool()
+        tgt_mask = tgt_mask & nopeak_mask  # 合并填充掩码和未来信息掩码
+        return src_mask, tgt_mask
+
+    def forward(self, src, tgt):
+        # 生成掩码
+        src_mask, tgt_mask = self.generate_mask(src, tgt)
+        
+        # 编码器部分
+        src_embedded = self.dropout(self.positional_encoding(self.encoder_embedding(src)))
+        enc_output = src_embedded
+        for enc_layer in self.encoder_layers:
+            enc_output = enc_layer(enc_output, src_mask)
+        
+        # 解码器部分
+        tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
+        dec_output = tgt_embedded
+        for dec_layer in self.decoder_layers:
+            dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
+        
+        # 最终输出
+        output = self.fc(dec_output)
+        return output
+```
+
 
 ## 优化算法
 
