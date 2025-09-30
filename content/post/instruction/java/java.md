@@ -188,12 +188,17 @@ private static final String DEFAULT_SCHOOL = "school";
 
 #### final关键字
 可以修饰类、方法、变量。
+
     修饰类：称为最终类，不能再被继承；
     修饰方法：称为最终方法，不能被重写；
     修饰变量：该变量仅在初始化的时候能被赋值。
+             对于引用变量（数组）：其地址不可改变，所指向对象的内容值可以改变
 
+常量名采用全大写，单词间以下划线分割。
 
 ### 多态
+父类引用指向子类对象，通过调用父类中定义的方法，实际执行相应子类重写后的方法。
+
 继承/实现情况下同一个行为可以具有不同的表现形式，表现为对象多态、行为多态
 
 多态的前提条件有三个：
@@ -244,3 +249,89 @@ public class PolymorphismDemo {
 }
 ```
 
+
+### 特殊类
+#### 单例类（单例设计模式）
+确保某个类只能创建一个对象（应用如任务管理器）。  
+
+```java
+// 单例类 single instance
+public class A{
+    // 在类内创建唯一的对象
+    // 为保护该对象在外部被设成null：
+    // 若使用public修饰，则加上final；若使用private修饰，则使用方法返回对象
+    private static A a = new A();//懒汉式：private static A a;
+
+    // 构造器私有，避免在类外被调用，只能在类内创建对象
+    private A(){
+    }
+
+    public static A getObject(){
+        // 懒汉式
+        // if (a == null){
+        //     a = new A();
+        // }
+        return a;
+    }
+}
+// 饿汉式单例：在获取类的对象前就已经创建好对象
+// 懒汉式单例：在获取类的对象时才创建对象，即在返回方法内创建对象
+```
+
+#### 枚举类enum
+用于信息分类和标识，常应用于switch的case处
+```java
+public enum PlayerType {
+    TENNIS,
+    FOOTBALL,
+    BASKETBALL
+}
+
+// 反编译结果
+public final class PlayerType extends Enum
+{
+
+    public static PlayerType[] values(){
+        return (PlayerType[])$VALUES.clone();
+    }
+    public static PlayerType valueOf(String name){
+        return (PlayerType)Enum.valueOf(com/cmower/baeldung/enum1/PlayerType, name);
+    }
+    private PlayerType(String s, int i){
+        super(s, i);
+    }
+
+    public static final PlayerType TENNIS;
+    public static final PlayerType FOOTBALL;
+    public static final PlayerType BASKETBALL;
+    private static final PlayerType $VALUES[];
+
+    static 
+    {
+        TENNIS = new PlayerType("TENNIS", 0);
+        FOOTBALL = new PlayerType("FOOTBALL", 1);
+        BASKETBALL = new PlayerType("BASKETBALL", 2);
+        $VALUES = (new PlayerType[] {
+            TENNIS, FOOTBALL, BASKETBALL
+        });
+    }
+}
+```
+
+    1.枚举都是继承自Enum的最终类，不可被继承；
+    2.枚举类的第一行只能罗列常量的名称，每个常量都是枚举类的一个对象；
+    3.枚举类的构造器私有，因此不会对外创建对象
+
+
+#### 抽象类abstract
+使用abstract关键字修饰类和方法。  
+抽象方法**没有方法体，只有方法声明**。
+如public abstract void m();
+
+1.抽象类中可以没有抽象方法，但**抽象方法必须在抽象类中**。
+2.抽象类**不能创建对象**，仅作为父类以供继承。
+3.抽象类的子类必须**重写抽象类的全部抽象方法**。
+
+因此抽象类强迫子类重新实现抽象方法，避免方法不适用。常用于多态
+
+### 接口interface
