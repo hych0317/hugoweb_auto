@@ -15,10 +15,10 @@ categories = ['指令语法']
     public：所有地方都可见。
 
 ### 变量类型
-实例（成员）变量 (instance variable)：属于某个对象（实例）的变量。
+1.（实例/成员）变量 (instance variable)：属于某个对象（实例）的变量。
     可以由public和private修饰。见封装部分。
 
-静态（类）变量 (static variable)：由static修饰，属于类本身的变量，不依赖某个具体对象。
+2.（静态/类）变量 (static variable)：由**static**修饰，属于类本身的变量，不依赖某个具体对象。
 ```java
 public class VarTest{
     private int instVar;
@@ -35,7 +35,9 @@ v2.instanceVar = 20;//不同
 ```
 静态变量推荐使用类名访问VarTest.staVar
 
-局部变量：方法内部的变量，**必须初始化**
+3.局部变量：**方法内部**的变量，**必须初始化**
+
+4.常量：由**final**修饰
 
 ### 实例、静态方法
 静态方法：常用于main方法、工具类中的方法
@@ -252,13 +254,13 @@ public class PolymorphismDemo {
 
 ### 特殊类
 #### 单例类（单例设计模式）
-确保某个类只能创建一个对象（应用如任务管理器）。  
+**构造器私有化，以在类内创建唯一的对象**，确保某个类只能创建一个对象（应用如任务管理器）。  
 
 ```java
 // 单例类 single instance
 public class A{
     // 在类内创建唯一的对象
-    // 为保护该对象在外部被设成null：
+    // 为保护该对象不在外部被置成null：
     // 若使用public修饰，则加上final；若使用private修饰，则使用方法返回对象
     private static A a = new A();//懒汉式：private static A a;
 
@@ -323,7 +325,7 @@ public final class PlayerType extends Enum
     3.枚举类的构造器私有，因此不会对外创建对象
 
 
-#### 抽象类abstract
+#### 抽象类abstract--模板
 使用abstract关键字修饰类和方法。  
 抽象方法**没有方法体，只有方法声明**。
 如public abstract void m();
@@ -334,4 +336,564 @@ public final class PlayerType extends Enum
 
 因此抽象类强迫子类重新实现抽象方法，避免方法不适用。常用于多态
 
-### 接口interface
+### 接口interface--功能
+定义规范，分化出不同实现类，使得可以在不同实现类中灵活切换。  
+
+使用 **implements**(实现)关键字 通过接口实现“多继承”，注意要重写所有接口的抽象方法。  
+// class C implements A , B {//重写全部抽象方法}
+
+#### 规则
+    接口中只允许定义常量（默认加public static final，因此实际为常量）
+    接口中允许定义抽象方法
+    接口中允许定义特定实例方法（Java 8 之后）
+    接口不能创建对象（无构造器、只有抽象方法）
+    接口也可以用于多态（相当于义父，地位低于父类）
+
+#### JDK8后新增三种实例方法
+增强了接口的功能，且添加功能时避免已有的实现类需要重写。
+
+1.默认方法  
+使用default修饰，默认会被加上public。  
+只能由**接口的实现类对象**调用。
+
+2.私有方法  
+使用private修饰
+只能被**接口中其它实例方法**调用。
+
+3.静态方法  
+使用static修饰，默认会被加上public。  
+只能由**接口名**调用。
+
+#### *接口与继承的注意事项
+1、接口可以多继承，且同名方法会合并；  
+2、若多个接口出现方法签名冲突，则不支持多继承，也无法被实现；
+```java
+interface A {void show();}
+interface B {
+    void show();
+    // String show();
+}
+
+interface C extends A , B{
+    // 此时C内相当于是A B的结合
+    // 若B中show()返回值类型是String，则签名冲突报错
+}
+```
+3、一个类继承了父类，同时又实现了接口，会优先调用父类中的同名方法；  
+4、可以通过重写冲突方法来规避2中的报错。  
+
+如果一定要调用3 4中接口的方法，使用 接口名.super.方法名 进行调用。
+
+### 代码块
+分为两种：
+静态代码块： static{...}  
+类加载时自动执行，只会执行一次（类只加载一次），常用于静态变量初始化。  
+
+实例代码块： {...}
+创建对象时自动执行，常用于对实例变量初始化。
+
+### 内部类
+定义在另一个类内部的类。  
+
+#### 1.成员内部类
+成员内部类寄生于 *外部类的**对象***。  
+成员内部类可以直接访问外部类的所有成员属性。
+
+```java
+public class Outer {
+    int num = 1;
+
+    public Outer () {
+        new Inner().print();// 外部类要通过创建成员内部类的对象，才可以访问内部类的成员
+    }
+
+    class Inner {
+        public void print() {
+            System.out.println(num);// 直接访问外部类
+        }
+    }
+}
+
+// 因此访问内部类时，先得创建一个外部类的对象
+Outer.Inner a = new Outer().new Inner();
+a.print();
+```
+
+#### 2.静态内部类
+由static关键字修饰，只在创建时加载一次，不允许访问外部类中 *非static* 的变量和方法（即外部类对象）。  
+
+Outer.Inner a = new Outer.Inner();
+
+#### 3.局部内部类
+局部内部类是定义在一个方法或者一个作用域里面的类，其生命周期仅限于作用域内。
+不能被权限修饰符(public、private、protected、static)修饰
+
+
+#### 4.匿名内部类（子类对象）
+在创建对象的同时，当场声明并实例化的一个类。用于创建只需要使用一次的、临时的实现类。  
+ 主要是用来继承其他类或者实现接口，并不需要增加额外的方法，方便对继承的方法进行实现或者重写。
+
+**唯一一种没有构造方法的类**，是直接通过new关键字创建的一个子类对象。既是类也是对象。
+
+格式：
+```java
+new 类/接口(参数值){
+    // 匿名类的类体 (可以包含字段、方法等)
+    // 实现接口的方法 或 重写父类的方法
+}
+```
+```java
+Comparator<String> lengthComparator1 = new Comparator<String>() {
+    @Override
+    public int compare(String s1, String s2) {
+        return Integer.compare(s1.length(), s2.length());
+    }
+};
+// 2. Lambda 表达式写法 (简洁)
+Comparator<String> lengthComparator2 = (s1, s2) -> Integer.compare(s1.length(), s2.length());
+// 3. 使用方法引用 (更简洁)
+Comparator<String> lengthComparator3 = Comparator.comparingInt(String::length);
+```
+
+### 函数式编程
+#### Lambda表达式
+用于替代**函数式接口(有且仅有一个抽象方法)**的匿名内部类对象。  
+用注解 @FunctionalInterface 来声明函数式接口。
+
+格式：  
+(被重写方法的形参列表) -> {被重写方法的方法体}
+
+Lambda语句简化规则：  
+参数类型可以省略不写；单个参数可以省略()；只有单行代码时，可以省略{}，同时需要去掉分号和return（如果是return语句的话）
+
+#### 方法引用
+1.静态方法引用  
+用法：当Lambda表达式调用了一个静态方法时，且->前后参数形式一致。  
+格式：**类名**::静态方法名
+
+```java
+Class Arr {
+    private int num;
+
+    public static int minus(Arr a1, Arr a2){
+        return a1.getNum() - a2.getNum();
+    }
+}
+
+Arr[] arr1 = new Arr[2];
+Array.sort(arr1, (a1,a2)->a1.getNum() - a2.getNum())
+Array.sort(arr1, Arr::minus)
+```
+
+2.实例方法引用  
+用法：当Lambda表达式调用了一个实例方法时，且->前后参数形式一致。  
+格式：**对象名**::实例方法名
+
+3.特定类的方法引用  
+用法：当Lambda表达式调用了一个实例方法时，且第一个参数是方法的主调，后续参数均为该方法的参数。  
+格式：特定类名::方法名
+
+```java
+Arrays.sort(names, (n1,n2) -> n1.compareToIgnoreCase(n2))
+Arrays.sort(names, String::compareToIgnoreCase)
+```
+
+4.构造器引用  
+用法：当Lambda表达式只是在创建对象，且->前后参数形式一致。  
+格式：类名::new
+
+```java
+Class Car{
+    private String name;
+}
+
+@FunctionalInterface
+public interface CarFactory {
+    Car getCar(String name);// 函数式接口的抽象方法
+}
+
+// -----------简化示例-----------
+CarFactory cf = new CarFactory() {
+    @Override
+    public Car getCar(String name) {
+        return new Car(name);
+    }
+};
+// Lambda表达式：简化为参数 -> 方法体
+CarFactory cf = name -> new Car(name);
+// 构造器引用：L式只是在创建对象，实际需要提供的只有类名
+CarFactory cf = Car::new;
+
+// -----------实际使用-----------
+Car c1 = cf.getCar("奔驰");
+// 本例重写的方法相当于实现了
+Car c1 = new Car("奔驰");
+```
+
+### API
+#### String
+1.通过new创建新对象 
+
+提供了四种构造器API：可创建空字符串，根据字符串、字符数组、byte数组创建。  
+```java
+char[] chars = ['h','e','l','l','o']
+String s = new String(chars)
+```
+
+与常规初始化（String s = 'hello'）不同的地方：  
+常规方法的字符串对象存储在*字符串常量池*，相同内容的对象s1 s2实际是同一个对象；  
+而new方式会创建新的对象（**即使对象内容相同**）放在堆内存中
+
+2.部分常用API
+获取index处的字符: charAt(int index); 将字符串转换为字符数组char[]: toCharArray();  
+忽略大小写比较: equalsIgnoreCase(); 截取:  substring(bIndex, eIndex); 替换: replace(target, replacement);  
+
+
+## 泛型
+在**编译阶段**约束数据类型，保证数据类型一致性，避免强制转换异常。  
+泛型只在编译时起作用，**运行时并不会保留**泛型类型信息。
+
+```java
+// 不指定泛型的ArrayList可以存放任何类型的数据，因为所有类型都继承自Object类。
+ArrayList list = new ArrayList();// 实际是ArrayList<Object>
+list.add("text");
+list.add(new Date());
+String str = (String)list.get(0);// 取出数据的时候需要强制类型转换。因为存放的是Object类型的元素，编译器不知道元素本身的类型。
+```
+可以用各字母指代泛型，常用<E/T/K/V>，意义分别是Element/Type/Key/Value，
+
+### 包装类
+泛型只支持对象类型，**不支持基本数据类型**。  
+因为类型擦除后泛型容器在底层实际上按照一个 Object[] 数组来存储元素，而基本数据类型不属于object的子类。  
+于是使用包装类Integer、Character(其余均是首字母大写)，它们是基本数据类型的对象版本，并且可以**直接当基本类型使用**（自动装拆箱）。  
+
+```java
+// 手动包装
+Integer in1 = Integer.valueOf(100); // 创建100的对象
+// 实际上会自动包拆装，直接使用即可
+Integer in2 = 100;
+```
+
+可以使用包装类的方法实现与字符串之间的相互转换。
+```java
+String s = Integer.toString(10);
+int i = Integer.parseInt("99")
+```
+
+### 类型擦除
+JVM编译时会把泛型的 类型变量 擦除，并替换为限定类型（没有限定则是Object），这会导致一些问题
+
+下例类型变量String和Date在擦除后会自动消失，method方法的实际参数是ArrayList list，因此导致编译失败
+```java
+public static void method(ArrayList<String> list) {
+        System.out.println("ArrayList<String> list");
+    }
+
+public static void method(ArrayList<Date> list) {
+        System.out.println("ArrayList<Date> list");
+    }
+```
+
+### 泛型类/接口/方法
+泛型类
+```java
+class MyArrayList<E> {
+    private Object[] elementData;
+    private int size = 0;
+
+    public MyArrayList(int initialCapacity) {
+        this.elementData = new Object[initialCapacity];
+    }
+    
+    public boolean add(E e) {
+        elementData[size++] = e;
+        return true;
+    }
+    
+    E elementData(int index) {
+        return (E) elementData[index];
+    }
+}
+```
+泛型接口/方法：可以在实现时才指定具体类型，使得接口/方法更通用。
+```java
+public interface Printer<T> {// 泛型接口
+    void print(T data);
+    }
+
+public <T> T[] toArray(T[] a) {// <T> 声明T作为泛型；T[]是返回类型及参数类型，可无
+        return (T[]) Arrays.copyOf(elementData, size, a.getClass());
+    }
+
+public E get(int index) {// 不是泛型方法，只是使用类的泛型
+        return (E) elementData[index];
+    }
+```
+### 泛型限定符extends
+限定符 extends 可以缩小泛型的类型范围
+```java
+class GrandFather {
+    void show() {System.out.println("I am GrandFather");}
+}
+class Father extends GrandFather {
+    @Override
+    void show() {System.out.println("I am Father");}
+}
+class Child extends Father {
+    @Override
+    void show() {System.out.println("I am Child");}
+}
+class MyList<E extends Father> {}
+
+MyList<GrandFather> list = new MyList<>();// 错误，E只能是Father或其子类
+MyList<Father> list = new MyList<>();// 正确
+MyList<Child> list = new MyList<>();// 正确
+list.add(new GrandFather());// 错误，GrandFather不是Father的子类
+list.add(new Father());
+list.add(new Child());// 正确，Child是Father的子类
+``` 
+
+### 通配符<?>
+**通配符<?>**用来解决类型不确定的情况，例如在方法参数或返回值中使用。
+
+**上限通配符<? extends T>**表示通配符只能接受 T 或 T的子类。
+
+**下限通配符<? super T>**表示通配符必须是 T 或 T的超类。
+```java 
+public static void printList(List<?> list) {...}// 可以接受任意类型的List，如List<Integer>、List<String>等
+public static void printNumberList(List<? extends Number> list) {...}// 可以接受List<Integer>、List<Double>等
+```
+假设有一个类Animal及其子类 Dog和Cat。则对于List<? super Dog>集合，类型参数必须是Dog或其父类类型。  
+可以向该集合中添加Dog类型的元素，也可以添加它的子类**元素**。但是不能向其中添加Cat类型的元素。
+
+**PECS (Producer Extends, Consumer Super)原则**
+? extends T：可以安全地读取数据，但限制了写入。  
+? super T：可以安全地写入数据，但限制了读取。
+
+
+## 集合框架（容器）
+![group](./group.png)
+### Collection
+
+**常用方法**
+| 方法 | 说明 |
+|---|---|
+public boolean add(E e)	| 把给定的对象添加到当前集合中
+public void clear()	| 清空集合中所有的元素
+public boolean remove(E e)	|把给定的对象在当前集合中删除
+public boolean contains(Object obj)	|判断当前集合中是否包含给定的对象
+public boolean isEmpty()	|判断当前集合是否为空
+public int size()	|返回集合中元素的个数。
+public Object[] toArray()	|把集合中的元素，存储到数组中
+
+#### 遍历方法
+1.普通for循环  
+只适用于有索引集合。
+
+2.迭代器
+```java
+Iterator it = list.iterator();// 初始位于第一个元素处
+while (it.hasNext()) {// 判断是否还有下一个元素，返回true/false
+    System.out.print(it.next());// 读取当前元素再移位
+}
+```
+3.增强for循环（for-each） 
+本质是迭代器遍历集合的简化写法。  
+
+格式：for(元素数据类型  变量名 : 要遍历的数组/集合)
+```java
+for (String s : list) {
+    System.out.print(s);
+}
+```
+4.forEach方法  
+源码：
+```java
+default void forEach(Consumer<? super T> action) {
+    Objects.requireNonNull(action);// 判断传入的action对象是否为null
+    for (T t : this) {
+        action.accept(t);// 遍历action对象
+    }
+}
+```
+调用：
+```java
+list.forEach(new Consumer<Integer>(){
+    @Override
+    public void accept(Integer int) {
+        System.out.println(int);
+    }})
+// 简化
+list.forEach(int -> System.out.println(int);)
+list.forEach(System.out::println)// 已经指明对象为list，forEach方法不需要其他参数
+```
+##### 并发修改异常
+对于有索引的集合，在一次遍历中使用list.remove()，后续的元素位置会前移，而迭代器的游标位置后移，导致跳过了一个元素。  
+1 在for循环中删除元素时进行i--，或者从后往前进行循环  
+2 迭代器会检测是否出现并发修改异常并报错，使用迭代器的**it.remove()**可以避免，对于**无索引的集合**只能使用迭代器  
+3 增强for和forEach方法无法解决并发修改异常，只适合用于遍历
+
+#### List
+均有序、可重复、有索引，因此多了与索引相关的方法。
+
+有ArrayList、LinkedList两种实现类。其底层数据结构分别是动态数组和双向链表，应用场景不同（查询/增删）。
+
+· ArrayList第一次添加元素时，默认容量为10，后续每次扩容为原来的1.5倍。  
+· LinkedList可以从头尾两端添加元素，多了与**头尾相关**的方法。常用于构建队列、栈等。
+
+#### Set
+所有set都不重复、无索引；set本身无序。
+
+**特点**：
+有HashSet、LinkedHashSet、TreeSet三种实现类，其增删查改的速度均快。  
+    HashSet底层是哈希表，无序。  
+    LinkedHashSet底层是哈希表+链表，有序（默认插入顺序）。  
+    TreeSet底层是红黑树，有序（默认升序排序）。
+
+##### HashSet
+基于哈希表实现，依赖于元素的 `hashCode()` 和 `equals()` 方法。  
+如果希望hashSet认为内容相同的对象是一样的，则需要重写这两个方法（直接使用自动重写）。
+```java
+@Override
+public int hashCode() {
+    return Objects.hashCode(this.name, this.age);
+}
+```
+流程:  
+1.创建默认长度为16的数组，默认加载因子为0.75。
+2.添加元素时，首先计算元素的哈希值（`hashCode`），以确定元素的存储位置。
+3.判断该位置是否有其他元素，若无元素则创建新节点；若有元素则调用 `equals()` 方法比较，丢弃重复元素，将非重元素添加到链表末尾。
+
+扩容：当链表长度超过16*0.75=12的时候，会扩容为原来的2倍。另外当链表长度超过8且数组长度大于64时，会转换为红黑树。
+
+**哈希值**
+java中每个对象都有哈希值，哈希值是int类整数值。  
+同一个对象多次调用hashCode()方法，返回的哈希值相同，即使对象内容不同。  
+不同的对象的哈希值大概率不同，但也可能相同（哈希冲突）。
+
+**哈希表**
+基于数组、链表、红黑树实现。
+
+**红黑树**
+可以自平衡的二叉树，查询、插入、删除的时间复杂度都为O(log n)。  
+
+##### LinkedHashSet
+也是基于哈希表实现，但是每个元素都增加了双链表机制记录前后元素，因此**插入有序**。  
+元素实际为实现类Entry的对象，Entry对象包含：key-value对（底层的map），前后节点的指针，下节点的指针，哈希值。
+
+##### TreeSet
+基于红黑树实现，元素自动升序排序。  
+对于自定义类型，默认无法直接排序，需要重写compareTo()方法。重写方法可以保留相同值的元素。
+
+### Map
+也叫做键值对集合，格式为：{key1:value1, key2:value2, ...}。   
+其中key不可重复，value可以重复。key与value一一对应。
+
+有HashMap、LinkedHashMap、TreeMap三种实现类。  
+其特点见上面set的三种实现类，因为实际上set系列集合底层是基于map实现的（只使用key丢弃了value）。
+```java
+Map<String, Integer> map = new HashMap<>();
+```
+
+**常用方法**
+| 方法 | 说明 |
+|---|---|
+public V put(K key, V value)	|添加元素，如果key已存在，则用新的value覆盖旧的value，并返回旧的value
+public int size()	|获取集合的大小
+public void clear()	|清空集合
+public boolean isEmpty()	|判断集合是否为空, 为空返回true
+public V get(Object key)	|根据键获取对应值
+public V remove(Object key)	|根据键删除整个元素
+public boolean containsKey(Object key)	|判断是否包含某个键
+public boolean containsValue(Object value)	|判断是否包含某个值
+public Set<K> keySet()	|获取全部键的集合
+public Collection<V> values()	|获取Map集合的全部值
+
+**遍历方式**
+1.键找值  
+先获取键的集合（keySet()方法），再通过键获取值（get(Object key)方法）
+
+2.键值对  
+entrySet()方法获取键值对的集合，再通过getKey()、getValue()方法获取键和值。
+
+```java
+Set Map.Entry<String, Integer> entrySet = map.entrySet();
+for (Map.Entry<String, Integer> entry : entrySet) {
+    String key = entry.getKey();
+    Integer value = entry.getValue();
+    System.out.println(key + ":" + value);
+}
+```
+3.forEach方法  
+forEach方法可以遍历键值对，并对键值对进行操作。
+```java
+map.forEach(new BiConsumer<String, Integer>() {
+    @Override
+    public void accept(String key, Integer value) {
+        System.out.println(key + ":" + value);
+    }
+});
+// 简化
+map.forEach((key,value) -> System.out.println(key + ":" + value));
+```
+
+## IO流
+
+### Stream流
+
+
+## 异常
+有错误则抛出异常，但不会终止程序。
+### 异常分类
+![异常分类](/exception.png)
+Exception和Error都继承了Throwable类。只有Throwable类（或者子类）的对象才能使用throw关键字抛出，或者作为catch的参数类型。
+
+Checked Exception（受检异常）：在编译期被检查的异常，必须显式处理（通过try-catch 或 throws）。正逐步淘汰。
+Unchecked Exception（非受检异常 / 运行时异常）：运行时异常，不需要在编译期显式处理。继承自：RuntimeException
+
+·NoClassDefFoundError 和 ClassNotFoundException的区别：  
+都由于系统运行时找不到要加载的类导致，但触发原因不同。
+    NoClassDefFoundError：程序在**编译时可以**找到所依赖的类，但是在**运行时找不到**指定的类文件；原因可能是编译的类文件被删除。
+    ClassNotFoundException：当动态加载 Class 对象的时候找不到对应的类时抛出该异常；原因可能是要加载的类不存在或者类名写错了。
+
+### 异常处理
+#### try-catch(-finally)
+```java
+try{
+// 可能发生异常的代码
+}catch (exception(type) e(object)){
+// 异常处理代码
+}catch (exception2 e2){
+// 可以有多个catch
+}finally{
+// 无论是否发生异常，都会执行的代码
+}
+```
+多个catch块捕获异常时，**子类异常必须在前，父类异常在后**，否则会报错。如ArithmeticException是Exception的子类，其范围更具体，因此要放在前面。
+
+即便是try块中执行了return、break、continue这些跳转语句，finally块也会被执行。  
+不执行的情况：死循环 、JVM退出（System.exit(0)）等。
+
+#### throws和throw
+throws关键字用于声明异常，它的作用和try-catch相似；而throw关键字用于显式的抛出异常。  
+throws关键字后面跟的是异常的名字；而throw关键字后面跟的是异常的对象。
+```java
+public void myMethod1() throws ArithmeticException, NullPointerException{...};// 方法体中有这些异常则抛出
+if(b==0){throw new ArithmeticException("算术异常");}// 显式抛出异常
+```
+
+### 自定义异常
+1.继承Exception或RuntimeException类
+2.提供两个构造器：无参和带String参数（异常信息）
+```java
+public class MyException extends Exception {
+    public MyException() {
+        super();// 调用父类的无参构造器
+    }
+
+    public MyException(String message) {
+        super(message);// 调用父类的带String参数的构造器
+    }
+}
+```
+
