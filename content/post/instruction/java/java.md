@@ -1185,6 +1185,24 @@ public class MyTest {
 }
 ```
 
+- 其他注解
+| 注解 | 说明 |
+|---|---|
+| @ParameterizedTest | 参数化测试，可以使用不同的参数多次运行同一个测试方法 |
+| @ValueSource | 为参数化测试提供值,与@ParameterizedTest一起使用 |
+| @BeforeAll | 在所有测试方法执行前运行一次，必须是静态方法 |
+| @AfterAll | 在所有测试方法执行后运行一次，必须是静态方法 |
+| @BeforeEach | 在每个测试方法执行前运行一次 |
+| @AfterEach | 在每个测试方法执行后运行一次 |
+
+参数化测试示例：
+```java
+@ParameterizedTest
+@ValueSource(strings = {"hello", "world", "java"})
+public void testWithStringParameter(String arg) {
+    assertNotNull(arg);
+}
+```
 
 ## 多线程
 
