@@ -62,7 +62,7 @@ v2.instanceVar = 20;//不同
 
 
 ### 数据类型
-整型的默认类型是int
+- 整型的默认类型是int
 ```java
 sum(100,200);//会报错，因为字面量100是默认类型int，需要(byte)100
 
@@ -71,14 +71,42 @@ public static int sum(byte a, byte b)
     return a+b;//返回类型为int
 }
 ```
+- 浮点数的默认类型是double
 
-浮点数的默认类型是double
+BigDecimal类可以表示任意精度的浮点数，避免精度丢失问题。
+```java
+BigDecimal a = new BigDecimal("0.1");// 通过字符串构造
+BigDecimal b = BigDecimal.valueOf(0.2);// 通过静态方法构造
+BigDecimal c = a.add(b);
+BigDecimal d = a.divide(b, 2, RoundingMode.HALF_UP);// 除法需要指定精度和舍入模式，避免无限循环报错
+System.out.println(c); // 输出 0.3，不使用BigDecimal时会输出0.30000000000000004
+```
 
-### 表达式类型转换
+#### StringBuilder
+可变字符串，效率高于String。
+
+| 方法 | 说明 |
+|---|---|
+| `StringBuilder append(任意类型)` | 在字符串末尾追加内容 |
+| `StringBuilder reverse()` | 反转字符串 |
+| `StringBuilder insert(int offset, String str)` | 在指定位置插入内容 |
+| `StringBuilder delete(int start, int end)` | 删除指定范围的内容 |
+
+返回值均为StringBuilder对象本身，因此可以链式调用。
+
+
+示例：
+```java
+StringBuilder sb = new StringBuilder("Hello");
+sb.append(" World");
+System.out.println(sb.toString()); // 转换回String输出
+```
+
+#### 表达式类型转换
 最终结果由表达式的最高类型决定；
 byte、short、char在表达式中运算时直接提升为int参与运算。
 
-### 运算符
+#### 运算符
 +号在字符串运算中起连接作用，"abc"+5得"abc5","abc"+5+'a'得"abc5a", 'a'+5+"abc"得"102abc"
 
 b = a++;//先赋值再自加
@@ -89,6 +117,23 @@ a += b ：a = **(a的类型)** a + b
 
 短路与、或(&&、||)：若左边为false/true，则不执行右边(如++b>1不会导致自加)提前返回结果。
 
+#### 方法中可变参数
+方法签名中定义的特殊的形参，在**类型**后加上...，表示该形参可以接受任意数量的实参。  
+一个方法中的形参列表中，**只能有一个**可变参数，并且需要放在最后。
+
+```java
+public static int sum(int... nums) {
+    int total = 0;
+    for (int n : nums) {total += n;}// 可变参数在方法中视作数组
+    return total;
+}
+// 调用
+sum(); // 不传
+sum(1,2,3,4,5); // 多个
+sum(new int[]{1,2,3,4,5})// 数组
+```
+
+
 ### 流程控制语句
 #### switch
 表达式支持数据类型：byte、short、char、int、String、枚举类型；**不支持**double、float、long
@@ -97,6 +142,49 @@ a += b ：a = **(a的类型)** a + b
 case的值必须是确定的字面量，且不能重复
 break关键字是可选的，如果没有则**执行下一个case**(穿透性，当几种case处理代码一致时可以复用)；如果有，则跳出switch语句。
 default也是可选的。
+
+### 注解
+注解是代码中的一种元数据，用于为程序元素（类、方法、变量等）提供额外的信息。本质是一种特殊的接口。
+
+#### 元注解
+元注解是用于注解的注解，主要有以下几种：
+- @Retention：定义生命周期-源码/类文件/运行时
+- @Target：定义适用范围-类/方法/变量等
+- @Documented：将注解包含在Javadoc中
+- @Inherited：允许子类继承父类的注解
+
+#### 自定义注解
+使用 @interface 关键字定义注解。  
+```java
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)// 元注解
+public @interface MyAnnotation {// 自定义注解
+    String value();// 当注解只有一个属性时且命名为value，使用时可以省略属性名
+}
+
+// 使用注解示例
+@MyAnnotation("example value")
+public class MyClass {
+    System.out.println(MyClass.class.getAnnotation(MyAnnotation.class).value());
+}
+```
+#### 注解的解析
+使用反射机制获取注解信息，并根据注解执行相应的逻辑。  
+getDeclaredAnnotations()：获取当前对象上所有注解
+getAnnotation(Class<T> annotationClass)：获取指定类型的注解对象
+
+
+### 导第三方包
+使用import语句导入第三方包中的类或接口，以便在代码中使用。  
+语法：
+```java
+import 包名.类名;
+import 包名.*;
+```
+在项目中创建lib文件夹，放入jar包，然后在jar包上右键选择“Add as Library”。
+
 
 ## 面向对象
 三大特征：封装、继承、多态
@@ -251,6 +339,27 @@ public class PolymorphismDemo {
 }
 ```
 
+### 反射
+作用：
+- 1.在运行时动态获取类的信息（类名、方法、属性等），并可以动态创建对象、调用方法和访问属性（可以通过setAccessible(true)访问私有属性）。  
+- 2.可以绕过泛型（因为类型擦除）进行操作。
+- 3.适合用于通用框架开发，如Spring、Hibernate等。
+
+```java
+// 1从对象获取
+Class<?> clazz = obj.getClass();
+// 2类名获取类对象
+Class<?> clazz = Class.forName("com.example.MyClass");
+// 3从类获取
+Class<?> clazz = MyClass.class;
+
+Object obj = clazz.getDeclaredConstructor().newInstance();// 获取构造器，再创建对象
+Method method = clazz.getMethod("myMethod", String.class);// 获取方法
+method.invoke(obj, "Hello");// 调用方法
+Field field = clazz.getDeclaredField("myField");// 获取属性
+field.setAccessible(true);// 取消访问检查，可以访问私有属性
+field.set(obj, 42);// 设置属性值
+```
 
 ### 特殊类
 #### 单例类（单例设计模式）
@@ -672,7 +781,7 @@ public static void printNumberList(List<? extends Number> list) {...}// 可以�
 
 
 ## 集合框架（容器）
-![group](./group.png)
+![group](/content/post/instruction/java/group.png)
 ### Collection
 
 **常用方法**
@@ -837,15 +946,182 @@ map.forEach(new BiConsumer<String, Integer>() {
 map.forEach((key,value) -> System.out.println(key + ":" + value));
 ```
 
-## IO流
-
 ### Stream流
+用于对集合、数组进行操作的API，可以进行过滤、排序、映射、聚合等操作。
+
+示例：
+```java
+List<String> newList = list.stream().filter(s->s.startWith("a")).filter(s->s.length()==2).collect(Collectors.toList());  // 过滤以a开头，长度为2的字符串，并收集到新List中
+```
+
+#### 获取stream流
+1. 集合的stream方法
+```java
+Stream<String> stream1 = list.stream();
+Stream<String> stream11 = map.keySet().stream();// map先获取键或者值 map.values().stream() 或键值对map.entrySet().stream()
+```
+2. 数组的stream方法
+```java
+Stream<String> stream2 = Arrays.stream(arr);
+```
+3. stream类的方法
+```java
+Stream<String> stream3 = Stream.of("a", "ab", "ca");
+```
+
+#### 中间处理方法
+调用完成后返回新的Stream流，可以链式调用。
+
+| 方法 | 说明 |
+|---|---|
+Stream<T> filter(Predicate<? super T> predicate)	| 过滤元素，返回符合条件的元素
+Stream<T> sorted()	|对元素进行升序排序
+Stream<T> sorted(Comparator<? super T> comparator)	|按照指定规则排序
+Stream<T> limit(long maxSize)	|获取前几个元素
+Stream<T> skip(long n)	|跳过前几个元素
+Stream<T> distinct()	|去除流中重复的元素（自定义类的对象需要重写hashCode和equals方法）
+<R> Stream<R> map(Function<? super T, ? extends R> mapper)	|对元素进行加工，并返回对应的新流
+static <T> Stream<T> concat(Stream a, Stream b)	|合并a和b两个流为一个流
+
+#### 终止方法
+调用完成后返回结果，终止stream流。
+
+| 方法 | 说明 |
+|---|---|
+void forEach(Consumer action)	|对此流运算后的元素执行遍历
+long count()	|统计此流运算后的元素个数
+Optional<T> max(Comparator<? super T> comparator)	|获取此流运算后的最大值元素放入optional容器，避免空指针异常
+Optional<T> min(Comparator<? super T> comparator)   |获取此流运算后的最小值元素
+Object[] toArray()	|将流元素收集到数组
+R collect(Collector<? super T> collector)	|将流元素收集到容器中，collector类可以进一步收集到集合中
+
+
+collect方法可以收集到集合中，如toList()、toSet()、toMap(keyMapper, valueMapper)等。
+例：Map<String,Integer> map = stream.collect(Collectors.toMap(Students::getName, Students::getAge));// 收集到map集合
+
+## IO流
+用于读取文件、网络中的数据。实际开发中常用框架如Apache Commons IO、Google Guava等来简化IO操作。  
+
+按内容分为：字节流（处理所有类型数据）和字符流（处理文本文件）。  
+按方向分为：输入流（从源读取数据）和输出流（向目的写入数据）。
+
+![IO流分类](/content/post/instruction/java/IOStream.png)
+
+### 文件类操作
+| 方法 | 说明 |
+|---|---|
+file.exists()	|判断文件是否存在
+file.isFile()	|判断是否为文件
+file.isDirectory()	|判断是否为目录
+file.getName()	|获取文件名
+file.length()	|获取文件大小
+file.lastModified()	|获取文件最后修改时间
+file.createNewFile()	|创建文件
+file.delete()	|删除文件或空文件夹
+file.mkdir()	|创建目录
+file.mkdirs()	|创建多级目录
+File[] listFiles()	|获取目录下所有一级文件对象到文件对象数组中
+
+### 输入输出流
+
+#### 字节输入输出流
+**建立**
+|类|说明|
+|---|---|
+InputStream in = new FileInputStream(file/path);	|建立字节输入流
+BufferedInputStream bin = new BufferedInputStream(in);	|缓冲字节输入流，提高读取效率
+OutputStream out = new FileOutputStream(file/path, boolean append);	|建立字节输出流，append为true时表示追加写入
+BufferedOutputStream bout = new BufferedOutputStream(out);	|缓冲字节输出流，提高写入效率
+
+**读写方法**
+|读写方法|说明|
+|---|---|
+int read(int b)	|读取一个字节
+int read(byte[] b [, int offset, int len])	|从offset开始读取len个字节到byte数组b中
+byte[] ReadAllBytes |读取整个文件内容到字节数组中
+write(int b)	|写出一个字节
+write(byte[] b [, int pos, int len])	|写出字节数组
+close() throws IOException	|关闭流
+
+**资源释放方案**
+1. try-catch-finally
+```java
+try{
+    InputStream fin = new FileInputStream(file/path);	|建立字节输入流
+    OutputStream fout = new FileOutputStream(file/path, boolean append);
+    // 读写操作
+}catch(IOException e){
+    // 异常处理
+}finally{// 资源释放
+    fin.close();
+    fout.close();
+}
+```
+2. try-with-resources(推荐)
+在try后面的小括号内创建流对象，JVM会自动释放资源，避免忘记关闭流。  
+资源对象必须实现AutoCloseable接口（所有流类均已实现）。  
+```java
+try(InputStream fin = new FileInputStream(file/path);
+    OutputStream fout = new FileOutputStream(file/path, boolean append);){
+    // 读写操作
+}catch(IOException e){
+    // 异常处理
+}
+```
+
+#### 字符输入输出流
+**建立**
+|类|说明|
+|---|---|
+FileReader fr = new FileReader(file/path);	|建立字符输入流
+BufferedReader br = new BufferedReader(fr);	|缓冲字符输入流，提高读取效率
+FileWriter fw = new FileWriter(file/path, boolean append);	|建立字符输出流
+BufferedWriter bw = new BufferedWriter(fw);	|缓冲字符输出流，提高写入效率
+
+|读写方法|说明|
+|---|---|
+int read()	|读取一个字符
+int read(char[] cbuf [, int offset, int len])	|从offset开始读取len个字符到char数组cbuf中
+char[] ReadAllChars |读取整个文件内容到字符数组中
+String readLine()	|缓冲流独有的功能：读取一行文本
+void write(int c)	|写出一个字符
+void write(String str [, int pos, int len])	|写出字符串
+void write(char[] cbuf [, int pos, int len])	|写出字符数组
+void newLine()	|缓冲流独有的功能：写出一个换行符
+
+字符输出流写出数据后，需要**调用 flush() 或 close() 方法**将缓冲区数据强制写出，否则数据可能在内存中未写入硬盘文件。
+
+#### 字符输入/输出转换流
+用于解决字节流与字符流之间的转换问题，指定编码格式。
+|类|说明|
+|---|---|
+InputStreamReader isr = new InputStreamReader(InputStream in, String charsetName);	|字节输入流转换为字符输入流，可指定编码格式
+OutputStreamWriter osw = new OutputStreamWriter(OutputStream out, String charsetName);    |字节输出流转换为字符输出流，可指定编码格式
+
+### 打印流
+更高效的输出流，提供了多种重载的print()和println()方法，可以**直接输出**各种数据类型。
+
+|类|说明|
+|---|---|
+PrintStream ps = new PrintStream(OutputStream/File/Path out, boolean autoFlush, String charsetName);	|字节打印流
+PrintWriter pw = new PrintWriter(Writer out, boolean autoFlush);	|字符打印
+
+### 特殊流
+数据流(Data Stream)：用于读写基本数据类型和字符串，提供了readInt()、writeInt()等方法。
+对象流(Object Stream)：用于读写Java对象，提供了readObject()、writeObject()方法。对象必须实现Serializable接口。
+
+|类|说明|
+|---|---|
+DataInputStream dis = new DataInputStream(InputStream in);	|字节数据输入流
+DataOutputStream dos = new DataOutputStream(OutputStream out);	|字节数据输出流
+ObjectInputStream ois = new ObjectInputStream(InputStream in);	|字节对象输入流
+ObjectOutputStream oos = new ObjectOutputStream(OutputStream out);	|字节对象输出流
 
 
 ## 异常
 有错误则抛出异常，但不会终止程序。
 ### 异常分类
-![异常分类](/exception.png)
+![异常分类](/content/post/instruction/java/exception.png)
 Exception和Error都继承了Throwable类。只有Throwable类（或者子类）的对象才能使用throw关键字抛出，或者作为catch的参数类型。
 
 Checked Exception（受检异常）：在编译期被检查的异常，必须显式处理（通过try-catch 或 throws）。正逐步淘汰。
@@ -896,4 +1172,263 @@ public class MyException extends Exception {
     }
 }
 ```
+### JUnit
+测试方法必须使用@Test注解标记，且方法必须是public无参无返回值。  
+```java
+import org.junit.jupiter.api.Test;
 
+public class MyTest {
+    @Test
+    public void testMyMethod() {
+        // 测试代码
+    }
+}
+```
+
+
+## 多线程
+
+### 创建线程
+1. 继承Thread类，重写run()方法
+```java
+public class MyThread extends Thread {
+    @Override
+    public void run() {
+        // 线程执行的代码
+    }
+}
+MyThread t1 = new MyThread();
+t1.start();// 启动线程，调用run()方法
+```
+编码简单，但Java单继承的缺点也限制了其使用。  
+*执行结果不能直接返回*（run方法返回值是void）。
+
+2. 实现Runnable接口，重写run()方法
+```java
+public class MyRunnable implements Runnable {
+    @Override
+    public void run() {
+        // 线程执行的代码
+    }
+}
+MyRunnable r1 = new MyRunnable();// 创建Runnable对象
+new Thread(r1).start();// 将Runnable对象传递给Thread构造器，启动线程
+
+// 匿名内部类写法
+new Thread(new Runnable() {
+    @Override
+    public void run() {
+        // 线程执行的代码
+    }
+}).start();
+```
+扩展性强，但需要多创建一个Runnable对象。  
+*执行结果不能直接返回*（run方法返回值是void）。
+
+3. Callable接口，重写call()方法
+Callable接口可以有返回值，并且可以抛出异常。
+```java
+public class MyCallable implements Callable<Integer> {
+    @Override
+    public Integer call() throws Exception {
+        // 线程执行的代码
+        return 123;// 返回值
+    }
+}
+MyCallable c1 = new MyCallable();
+FutureTask<Integer> task = new FutureTask<>(c1);// FutureTask实现了Runnable接口
+new Thread(task).start();// 启动线程，调用call()方法
+Integer result = task.get();// 获取返回值，可能会阻塞等待线程执行完毕
+```
+
+### 线程的常用方法
+| 方法 | 说明 |
+|---|---|
+| start() | 启动线程 |
+| run() | 线程执行的代码 |
+| sleep(long millis) | 让当前线程睡眠指定毫秒数 |
+| join() | 调用该方法的线程优先执行 |
+| isAlive() | 判断线程是否存活 |
+| setName(String name) | 设置线程名称 |
+| getName() | 获取线程名称 |   
+| setPriority(int newPriority) | 设置线程优先级，范围1-10，默认5 |
+| getPriority() | 获取线程优先级 |
+| currentThread() | 获取当前线程对象 |
+
+### 线程同步
+多线程并发访问*共享资源*时，可能会出现数据不一致的问题。  
+为了解决这个问题，可以使用以下几种方式进行线程同步：
+
+1. **同步代码块**：在访问共享资源的代码块上加上`synchronized`关键字，表示该代码块是同步的，只有一个线程可以访问。
+```java
+public void myMethod() {
+    synchronized (this) {// 锁对象:实例方法使用共享资源；静态方法使用字节码（类名.class）
+        // 线程安全的代码
+    }
+}
+```
+
+2. **同步方法**：在方法上加上`synchronized`关键字，表示该方法是同步的，只有一个线程可以访问。
+```java
+public synchronized void myMethod() {
+    // 线程安全的代码
+}
+```
+
+3. **Lock锁**：使用`java.util.concurrent.locks.Lock`接口及其实现类（如`ReentrantLock`）来实现更灵活的线程同步。
+```java
+final Lock lock = new ReentrantLock();// 创建Lock对象
+lock.lock();// 获得锁
+try {
+    // 线程安全的代码
+} finally {
+    lock.unlock();// 释放锁，之中的代码会被锁保护
+}
+```
+
+### 线程池
+线程池可以复用线程，避免频繁创建和销毁线程带来的开销，提高系统性能。
+
+**常用方法：**  
+| 方法 | 说明 |
+|---|---|
+| execut(Runnable task) | 提交**Runnable任务**到线程池，无返回值 |
+| Future<T> submit(Runnable/Callable task) | 提交**Callable任务**到线程池，返回Future对象 |
+| shutdown() | 任务**执行完毕后**，关闭线程池 |
+| List<Runnable> shutdownNow() | **立即关闭**线程池，尝试停止所有正在执行的任务，返回队列中未执行的任务 |
+
+**1.ThreadPoolExecutor类**
+是线程池ExecutorService的核心类，可以通过构造器创建线程池。
+
+构造器有七个参数，含义为：
+- corePoolSize：核心线程数，线程池中始终保持的线程数。
+- maximumPoolSize：最大线程数，线程池中允许的最大线程数。
+- keepAliveTime：线程空闲时间，超过这个时间的空闲线程会被终止。
+- unit：时间单位，keepAliveTime的时间单位。
+- workQueue：任务队列，用于存放待执行的任务。
+- threadFactory：线程工厂，用于创建新线程。
+- handler：拒绝策略，当任务队列满且线程数达到最大值时，如何处理新任务。
+
+创建临时线程的时机：当**核心线程全被占用**且**任务队列满**，同时线程数未达到maximumPoolSize时。
+
+拒绝任务的时机：当**核心线程全被占用**且**任务队列满**，同时线程数已达到maximumPoolSize时。
+```java
+ThreadPoolExecutor executor = new ThreadPoolExecutor(
+        5, 10, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+for (int i = 0; i < 10; i++) {
+    final int taskId = i;
+    executor.submit(() -> {
+        // 线程执行的代码
+        System.out.println("Task " + taskId + " is running");
+    });
+}
+executor.shutdown();// 关闭线程池
+```
+
+**2.Executors工具类**
+本质是对ThreadPoolExecutor的封装，简化线程池的创建。
+
+**工具类静态方法：**
+| 方法 | 说明 |
+|---|---|
+| newSingleThreadExecutor() | 创建单线程的线程池，出现异常会自动补充 |
+| newFixedThreadPool(int nThreads) | 创建固定大小的线程池，若有线程出现异常结束，会自动补充新的线程 |
+| newCachedThreadPool() | 创建可缓存的线程池，线程数随任务数增加，空闲一分钟回收 |
+| newScheduledThreadPool(int corePoolSize) | 创建固定大小的线程池，可以延迟或定时执行任务 |
+
+**弊端：**
+1. FixedThreadPool和SingleThreadExecutor允许请求的队列长度无限制，可能导致内存耗尽。  
+2. CachedThreadPool和ScheduledThreadPool允许创建的线程数无限制，可能导致系统资源耗尽。  
+因此**阿里禁用Executors**创建线程池。
+
+示例：
+```java
+ExecutorService executor = Executors.newFixedThreadPool(5);// 创建固定大小的线程池
+for (int i = 0; i < 10; i++) {
+    final int taskId = i;
+    executor.submit(() -> {
+        // 线程执行的代码
+        System.out.println("Task " + taskId + " is running");
+    });
+}
+executor.shutdown();// 关闭线程池
+```
+
+## 网络编程
+Java提供了丰富的网络编程API，主要包括以下几个方面：
+
+1. **Socket编程**：用于实现TCP/IP协议的网络通信，包括客户端和服务器端的Socket编程。
+2. **UDP编程**：用于实现基于UDP协议的网络通信，适用于对实时性要求较高的场景。
+3. **HTTP编程**：用于实现基于HTTP协议的网络通信，包括发送HTTP请求和处理HTTP响应。
+4. **WebSocket编程**：用于实现基于WebSocket协议的双向通信，适用于实时应用场景。
+
+### Socket编程(TCP)
+Socket编程是Java网络编程的基础，主要包括以下几个类：
+| 类 | 说明 |
+|---|---|
+| Socket | 客户端Socket类，用于连接服务器 |
+| ServerSocket | 服务器Socket类，用于监听客户端连接 |
+| InetAddress | 表示IP地址的类 |
+| SocketException | Socket操作异常类 |
+#### 创建客户端Socket
+```java
+Socket socket = new Socket("localhost", 8080);// 连接服务器
+OutputStream out = socket.getOutputStream();// 获取输出流
+InputStream in = socket.getInputStream();// 获取输入流
+// 读写数据等，输出后记得flush()
+in.close();
+out.close();
+socket.close();// 关闭Socket
+```
+#### 创建服务器端Socket
+```java
+ServerSocket serverSocket = new ServerSocket(8080);// 监听端口
+while (true) {
+    Socket clientSocket = serverSocket.accept();// 接受客户端连接
+    clientSocket.getInputStream();// 获取输入流
+    clientSocket.getOutputStream();// 获取输出流
+    // 读写数据等
+    clientSocket.close();// 关闭客户端Socket
+}
+serverSocket.close();// 关闭服务器Socket
+```
+如果要处理多个客户端连接，可以为每个连接的socket创建一个新的线程。
+```java
+new Thread(() -> {
+    clientSocket.getInputStream();// 获取输入流
+    clientSocket.getOutputStream();// 获取输出流
+    // 读写数据等
+    clientSocket.close();// 关闭客户端Socket
+}).start();
+```
+
+#### B/S架构
+B/S（Browser/Server）架构是基于浏览器和服务器的网络架构，常用于Web应用开发。  
+HTTP协议是B/S架构中最常用的协议，Java提供了HttpURLConnection类用于发送HTTP请求和处理HTTP响应。
+
+
+### UDP编程
+UDP编程主要包括以下几个类：
+| 类 | 说明 |
+|---|---|
+| DatagramSocket | UDP Socket类，用于发送和接收数据包 |
+| DatagramPacket | 数据包类，用于封装发送和接收的数据 |
+#### 创建UDP客户端
+```java
+DatagramSocket socket = new DatagramSocket();// 创建UDP Socket
+String message = "Hello, UDP!";
+byte[] buffer = message.getBytes();
+DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("localhost"), 8080);// 创建数据包
+socket.send(packet);// 发送数据包
+socket.close();// 关闭Socket
+```
+#### 创建UDP服务器端
+```java
+DatagramSocket socket = new DatagramSocket(8080);// 监听端口
+byte[] buffer = new byte[1024];
+DatagramPacket packet = new DatagramPacket(buffer, buffer.length);// 创建数据包
+socket.receive(packet);// 接收数据包
+String message = new String(packet.getData(), 0, packet.getLength());
+System.out.println("Received message: " + message);
+socket.close();// 关闭Socket
+```
