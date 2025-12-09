@@ -10,12 +10,16 @@ categories = ['指令语法']
 ### 文件操作
 - ls：列出当前目录下的文件和目录
 - cd：切换目录
-- mkdir：创建目录
+- mkdir -p <d1/d2>：创建目录（-p：创建多级目录）
 - touch：创建文件
 - rm -rf：删除文件或目录（-r：递归删除文件夹及其下文件；-f：强制删除所有属性的文件，包括只读）
 - mv：移动或重命名文件或目录
 - cp：复制文件或目录
-- cat：查看文件内容
+- grep <path> "text" filename：在文件中查找指定文本的行
+- cat：查看文件内容(不如vim)
+- echo "text" > file.txt：将文本写入文件（覆盖）
+- echo "text" >> file.txt：将文本追加到文件末尾
+- find . -name "filename"：在当前目录及子目录中查找文件
 - sudo：以超级用户身份执行命令
 - su：切换用户身份
 - chmod：修改文件或目录权限
@@ -23,10 +27,10 @@ categories = ['指令语法']
 - du -sh <directory>：查看目录下总大小
 
 ### 进程管理
-- ps -ef：查看进程（UID用户标识号，PID进程标识号，PPID父进程标识号，CMD命令）
 - ps -ef | grep <PID>:可以查看子父进程之间的关系
+- ps -o ppid,cmd -p PID：查看指定进程的父进程和命令
 - pstree -p PID：查看进程树
-- top -d -i -p：实时显示进程信息(-d：更新显示；-i：不显示闲置进程；-p：指定进程ID)
+- top [-d -i -p]：实时显示进程信息(-d：更新显示；-i：不显示闲置进程；-p：指定进程ID)
 - who：查看登录用户
 - screen：创建会话,保持长期运行的进程  
     screen [-S <session_name>] <command>:创建会话并运行指令（命名可选）  
@@ -107,10 +111,26 @@ vim有两种模式：命令模式和编辑模式。
 - conda search package_name：搜索包
 - conda update package_name：更新包
 
-#### 验证pytorch安装
-1. 在对应虚拟环境中使用conda list查看
-2. 输入python / import torch / torch.cuda.is_available()，如果输出True则安装成功，否则失败。
-
 ### 源管理
 - conda config --add channels url：添加源
 - conda config --remove channels url：删除源
+
+## Docker
+镜像是用于创建容器的只读模板。 容器在镜像上添加了一个可写层，是镜像的一个运行实例。
+### 镜像操作
+- docker pull image_name:tag：拉取镜像
+- docker images：查看本地镜像
+- docker rmi image_id：删除镜像
+- docker build -t image_name:tag .：从Dockerfile构建镜像
+
+### 容器操作
+- docker run <-it> --name container_name image_name:tag -e ENV_VAR=value -p <host_port>:<container_port> /bin/bash：运行容器并进入bash
+    - -it：交互式终端
+    - -d：后台运行
+    - -e：设置环境变量
+    - -p：端口映射
+- docker ps -a：查看所有容器 -a会显示已停止的容器
+- docker stop container_id：停止容器
+- docker start container_id：启动容器
+- docker rm container_id：删除容器
+- docker exec -it container_id /bin/bash：进入运行中的容器bash
