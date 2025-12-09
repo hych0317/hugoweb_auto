@@ -513,7 +513,7 @@ public class MyApplication {
 
 
 ### MySQL
-![mysql](./mysql.png)
+![mysql](./assets/mysql.png)
 
 #### DDL（数据定义语言）
 数据库：
