@@ -12,26 +12,31 @@ categories = ['指令语法']
 - cd：切换目录
 - mkdir -p <d1/d2>：创建目录（-p：创建多级目录）
 - touch：创建文件
-- rm -rf：删除文件或目录（-r：递归删除文件夹及其下文件；-f：强制删除所有属性的文件，包括只读）
-- mv：移动或重命名文件或目录
-- cp：复制文件或目录
-- grep <path> "text" filename：在文件中查找指定文本的行
 - cat：查看文件内容(不如vim)
-- echo "text" > file.txt：将文本写入文件（覆盖）
+- echo "text" > file.txt：将文本**覆盖**写入文件
 - echo "text" >> file.txt：将文本追加到文件末尾
+- grep <path> "text" filename：在文件中查找指定文本的行
 - find . -name "filename"：在当前目录及子目录中查找文件
+- cp：复制文件或目录
+- mv：移动或重命名文件或目录
+- rsync -av --progress source/ destination/：同步文件夹（-a：归档模式，保留权限等信息；-v：显示详细信息；--progress：显示进度）
+- rm -rf：删除文件或目录（-r：递归删除文件夹及其下文件；-f：强制删除所有属性的文件，包括只读）
+- df -h：查看**磁盘**使用
+- du -sh --max-depth=1 <directory>：查看**目录**下总大小
+
+### 用户与权限
 - sudo：以超级用户身份执行命令
 - su：切换用户身份
 - chmod：修改文件或目录权限
-- df：查看磁盘使用
-- du -sh <directory>：查看目录下总大小
+- who：查看登录用户
 
 ### 进程管理
 - ps -ef | grep <PID>:可以查看子父进程之间的关系
 - ps -o ppid,cmd -p PID：查看指定进程的父进程和命令
-- pstree -p PID：查看进程树
 - top [-d -i -p]：实时显示进程信息(-d：更新显示；-i：不显示闲置进程；-p：指定进程ID)
-- who：查看登录用户
+- iotop -oPa：实时显示磁盘I/O使用情况(-o：只显示有I/O的进程；-P：显示累积I/O；-a：显示累计I/O)
+- sudo ionice -c 2 -n 0 -p PID：设置进程I/O优先级（-c：调度类，2为最佳努力；-n：优先级，0最高，7最低）
+- iostat：显示系统I/O统计信息
 - screen：创建会话,保持长期运行的进程  
     screen [-S <session_name>] <command>:创建会话并运行指令（命名可选）  
     screen -ls：SSH重连后查看会话  
@@ -40,25 +45,6 @@ categories = ['指令语法']
     -9:强制杀死进程  
     -15:正常杀死进程  
     杀死指定用户进程：kill -9 $(ps -ef | grep user_name)或kill -u user_name
-
-### pip
-- pip install <package_name> -i <镜像源> --proxy=http:// --no-deps(不自动调整其他包版本)：安装包
-    镜像源:
-    -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
-    -i https://pypi.doubanio.com/simple/：豆瓣源
-    -i https://mirrors.aliyun.com/pypi/simple/：阿里云源
-
-- pip uninstall package_name：卸载包
-- pip cache purge：清理缓存
-
-- pip list：查看已安装的包
-- pip show package_name：查看包信息
-- pip check：检查依赖版本是否一致
-
-- pip list --format=freeze > requirements.txt
-    按版本号导出依赖（更建议导出conda环境）
-- pip install -r requirements.txt：导入依赖
-    对应conda install --file requirements.txt
 
 ### 网络管理
 - ifconfig：查看网络接口信息
@@ -91,6 +77,25 @@ vim有两种模式：命令模式和编辑模式。
 
 编辑模式：按下i进入编辑模式，按下ESC进入命令模式。
 
+
+## pip
+- pip install <package_name> -i <镜像源> --proxy=http:// --no-deps(不自动调整其他包版本)：安装包
+    镜像源:
+    -i https://pypi.tuna.tsinghua.edu.cn/simple/：清华源
+    -i https://pypi.doubanio.com/simple/：豆瓣源
+    -i https://mirrors.aliyun.com/pypi/simple/：阿里云源
+
+- pip uninstall package_name：卸载包
+- pip cache purge：清理缓存
+
+- pip list：查看已安装的包
+- pip show package_name：查看包信息
+- pip check：检查依赖版本是否一致
+
+- pip list --format=freeze > requirements.txt
+    按版本号导出依赖（更建议导出conda环境）
+- pip install -r requirements.txt：导入依赖
+    对应conda install --file requirements.txt
 
 ## Conda
 ### 环境操作
