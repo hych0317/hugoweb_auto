@@ -19,7 +19,7 @@ description = '重点记录思路和想法'
 ### 题目
 ***27.*** 移除元素
 双指针：fast遍历数组，slow记录不等于 val 的个数（位置）。   
-if (nums[fast] != val) {nums[slow++] = nums[fast];}
+if (nums[fast] != val) { nums[slow++] = nums[fast]; }
 
 ***209.*** 长度最小的子数组
 滑动窗口：right指针扩展窗口，left指针收缩窗口。  
@@ -90,7 +90,7 @@ Java中字符串不可变，修改字符串会创建新对象。
 ```java
 for (int i = 0; i < ch.length; i += 2*k) {
     int left = i, right = Math.min(i+k-1, ch.length-1);
-    while (left<right) {
+    while (left < right) {
         char temp = ch[left];
         ch[left++] = ch[right];
         ch[right--] = temp;
@@ -101,11 +101,11 @@ for (int i = 0; i < ch.length; i += 2*k) {
 ***151.*** 翻转字符串里的单词
 去除多余空格，反转整个字符串，再反转每个单词。
 ```java
-while (left<=right) {// left为整个串的开头位置，不移动
+while (left <= right) {// left为整个串的开头位置，不移动
     int end = right;
-    while (left<=right && s.charAt(right)!=' ') right--;
+    while (left <= right && s.charAt(right) != ' ') { right--; }
     sb.append(s.substring(right+1, end+1)).append(" ");
-    while (left<=right && s.charAt(right)==' ') right--;// 去空格
+    while (left <= right && s.charAt(right) == ' ') { right--; }// 去空格
 }
 ```
 
@@ -118,10 +118,8 @@ public String removeDuplicates(String s) {
     int fast = 0;
     int slow = 0;
     while(fast < s.length()){
-        ch[slow] = ch[fast];
-        if(slow > 0 && ch[slow] == ch[slow - 1]) slow--;
-        else slow++;
-
+        if(slow > 0 && ch[fast] == ch[slow - 1]) { slow--; }// 当前slow位置未赋值，slow-1为结果串最后一个位置
+        else { ch[slow++] = ch[fast]; }
         fast++;
     }
     return new String(ch,0,slow);
@@ -161,7 +159,7 @@ int left = 0, right = 0;
 while (left < s.length()) {
     if (s.charAt(left) == sub.charAt(right)) {
         right++;
-        if (right == sub.length()) return left-right+1;
+        if (right == sub.length()) { return left-right+1; }
     } else {
         left -= right;// 下面有left++，不用加1
         right = 0;
@@ -182,12 +180,12 @@ return -1;
 ```java
 int n = s.length(); 
 int[] next = new int[n];
-for (int i = 1, j = 0; i<n; i++) {// i为后缀末尾，j为前缀末尾
-    while(j > 0 && s.charAt(i)!=s.charAt(j)) j = next[j-1];
-    if (s.charAt(i)==s.charAt(j)) j++;
+for (int i = 1, j = 0; i < n; i++) {// i为后缀末尾，j为前缀末尾
+    while(j > 0 && s.charAt(i) != s.charAt(j)) { j = next[j-1]; }
+    if (s.charAt(i) == s.charAt(j)) { j++; }
     next[i] = j;
 }
-if (next[n-1]>0 && n%(n - next[n-1]) == 0) return true;// 注意判断条件，next[n-1]>0
+if (next[n-1] > 0 && n % (n - next[n-1]) == 0) { return true; }// 注意判断条件，next[n-1]>0
 ```
 
 ## 栈和队列
@@ -228,7 +226,7 @@ dp[i]： 爬到第i层楼梯，有dp[i]种方法
 dp[0] = 1;
 for (int i = 1; i <= n; i++) {
     for (int j = 1; j <= m; j++) {// 一次能爬 1~m 步
-        if (i - j >= 0) dp[i] += dp[i - j];
+        if (i - j >= 0) { dp[i] += dp[i - j]; }
     }
 }
 return dp[n];
@@ -238,9 +236,9 @@ return dp[n];
 
 ***746.*** 使用最小花费爬楼梯
 ```java
-int dpi=Math.min(dp0+cost[i-2],dp1+cost[i-1]);
-dp0=dp1;
-dp1=dpi;
+int dpi = Math.min(dp0+cost[i-2], dp1+cost[i-1]);
+dp0 = dp1;
+dp1 = dpi;
 ```
 为什么dp0，dp1的更新只跨一步？只和遍历顺序有关。
 遍历顺序为i++，遍历顺序不是最终路径。因此跨越一步或者两步与遍历顺序无关。
@@ -298,13 +296,13 @@ return dp[N];
 [1,5,11,5] -> true  
 背包容量 sum/2，物品为 nums 数组。
 ```java
-if (sum%2 != 0) return false;
+if (sum % 2 != 0) { return false; }
 int target = sum/2;
 boolean[] dp = new boolean[target+1];
 dp[0] = true;
 for (int num : nums) {
     for (int j = target; j >= num; j--) {
-        dp[j] =  dp[j] || dp[j-num];
+        dp[j] = dp[j] || dp[j-num];
     }
 }
 return dp[target];
