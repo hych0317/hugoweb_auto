@@ -3,7 +3,7 @@ title = 'Algorithm'
 date = 2024-08-24T21:01:10+08:00
 draft = false
 categories = ['conclusion']
-description = '重点记录思路和想法'
+description = ''
 +++
 
 ## 数组
@@ -207,6 +207,221 @@ private void dump() {
 
 225. 用队列实现栈
 将除了队列尾部的元素依次出队再入队，最后一个元素即为栈顶元素。
+
+150. 逆波兰表达式求值
+遇到数字入栈，遇到运算符出栈两个数字进行运算，结果入栈。
+
+239. 滑动窗口最大值
+```java
+public int[] maxSlidingWindow(int[] nums, int k) {
+    int n = nums.length;
+    if (n == 0 || k == 0) { return new int[0]; }
+    int[] res = new int[n - k + 1];
+    Deque<Integer> queue = new ArrayDeque<>();
+
+    for (int i = 0; i < nums.length; i++) {
+        while (!queue.isEmpty() && nums[queue.peekLast()] <= nums[i]) {
+            queue.pollLast();
+        }// 出队所有比当前位置小的，因此队列中必为降序
+
+        queue.offerLast(i);// 入队
+        if (queue.peekFirst() <= i - k) {// 判断队首是否出窗口范围（用<=）
+            queue.pollFirst();
+        }
+
+        if (i >= k - 1) {
+            res[i - k + 1] = nums[queue.peekFirst()];
+        }
+    }
+    return res;
+}
+```
+
+347. 前K个高频元素
+使用小顶堆维护前k个高频元素。
+```java
+public int[] topKFrequent(int[] nums, int k) {
+    Map<Integer, Integer> map = new HashMap<>();
+    for (int num : nums) {
+        map.put(num, map.getOrDefault(num, 0) + 1);
+    }
+
+    // 最小堆：按出现次数排序
+    Queue<Map.Entry<Integer, Integer>> pq =
+            new PriorityQueue<>((a, b) -> a.getValue() - b.getValue());
+
+    for (Map.Entry<Integer, Integer> entry : map.entrySet()) {// entrySet() 遍历键值对
+        pq.offer(entry);
+        if (pq.size() > k) {// 个数超过k，弹出优先级最高（最小）元素
+            pq.poll();
+        }
+    }
+
+    int[] result = new int[k];
+    for (int i = 0; i < k; i++) {
+        result[i] = pq.poll().getKey();
+    }
+    return result;
+}
+```
+
+## 二叉树
+### 基础知识
+1. 特殊二叉树：满二叉树、完全二叉树、平衡二叉树、二叉搜索树、堆。
+- 满二叉树：每层节点数都达到最大值，深度为k时有2^k-1个节点。
+- 完全二叉树：除最后一层外都是满的，最后一层节点从左到右连续排列。
+- 平衡二叉树：任意节点的左右子树高度差不超过1。
+- 二叉搜索树：左子树所有节点值<根节点值<右子树所有节点值。
+- 堆：完全二叉树，父节点值总是大于/小于子节点值（大顶堆/小顶堆）。
+
+2. **遍历方式**：前序、中序、后序、层序。  
+*其实就是处理左右子节点的顺序不同：*  
+前序：根->左->右  
+中序：左->根->右  
+后序：左->右->根  
+层序：按层从上到下、从左到右遍历。
+```java
+// 递归前序遍历，中、后序则result.add分别在第二、三行
+void dfs(TreeNode root, List<Integer> list) {
+    if (root == null) {
+        return;
+    }
+    result.add(root.val);
+    preorder(root.left, result);
+    preorder(root.right, result);
+}
+// 层序遍历
+// // 也可以是Queue<TreeNode> queue = new LinkedList<>(); Deque支持更多操作，性能更好
+Deque<TreeNode> queue = new ArrayDeque<>();
+queue.offer(root);
+while (!queue.isEmpty()) {
+    int size = queue.size();// size为当前层节点数，避免处理下一层节点
+    List<Integer> level = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+        TreeNode node = queue.poll();
+        level.add(node.val);
+        if (node.left != null) { queue.offer(node.left); }
+        if (node.right != null) { queue.offer(node.right); }
+    }
+    result.add(level);
+}
+return result;
+```
+（处理节点时会按序访问其左右子节点。由于代码会自动拦截空节点，因此适用于任意形态的二叉树，无需局限于满二叉树）
+
+**通用遍历标记法：**
+压入null表示已处理该节点的子节点，可以直接读取它的值。
+```java
+Stack<TreeNode> stack = new Stack<>();
+stack.push(root);
+
+while (!stack.isEmpty()) {
+    TreeNode node = stack.pop();
+    if (node != null) {
+        // 示例：中序
+        if (node.right != null) stack.push(node.right); // 右
+        stack.push(node); // 中
+        stack.push(null); // 标记位
+        if (node.left != null) stack.push(node.left);   // 左
+    } else {
+        // 遇到null，说明下一个节点是需要被处理的根节点
+        result.add(stack.pop().val);
+    }
+}
+```
+
+3. 存储方式：顺序存储、链式存储。
+顺序存储即使用数组，适合完全二叉树。节点i的左子节点为2i+1，右子节点为2i+2。  
+链式存储即使用节点类，适合各种二叉树。
+
+### 题目
+101. 对称二叉树
+```java
+public boolean isSymmetric(TreeNode root) {
+    if (root == null) return true;
+    return dfs(root.left, root.right);
+}
+private boolean dfs(TreeNode left, TreeNode right) {
+    if (left == null && right == null) return true;
+    if (left == null || right == null || left.val != right.val) return false;
+    return dfs(left.left, right.right) && dfs(left.right, right.left);
+}
+```
+
+110. 平衡二叉树
+比较高度，则递归使用后序遍历。
+
+111. 二叉树的最小深度
+```java
+// 层序遍历：当遇到第一个叶子节点时，当前层数即为最小深度。
+while (!queue.isEmpty()){
+    int size = queue.size();
+    depth++;
+    TreeNode cur = null;
+    for (int i = 0; i < size; i++) {
+        cur = queue.poll();
+        if (cur.left == null && cur.right == null){ //直接返回最小深度
+            return depth;
+        }
+        if (cur.left != null) queue.offer(cur.left);
+        if (cur.right != null) queue.offer(cur.right);
+    }
+}
+// 递归
+public int minDepth(TreeNode root) {
+    if (root == null) return 0;
+    int m1 = minDepth(root.left);
+    int m2 = minDepth(root.right);
+    // 注意：如果有一个子树为空，判断语句返回0，会导致结果错误，需要特殊处理。
+    // 如果有一个子树为空，返回 m1 + m2 + 1 （m1或m2有一个为0）
+    // 如果都不为空，返回 min(m1, m2) + 1
+    return (root.left == null || root.right == null) ? (m1 + m2 + 1) : Math.min(m1, m2) + 1;
+}
+```
+
+
+***116.*** 填充每个节点的下一个右侧节点指针
+给定一个完美二叉树，填充每个节点的 next 指针，使其指向下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 NULL。
+```java
+// 1. 递归，不适用于任意形态的二叉树
+public Node connect(Node root) {
+    if (root == null) { return null; }
+    Node leftmost = root;
+    while (leftmost.left != null) {
+        Node head = leftmost;
+        while (head != null) {
+            head.left.next = head.right;// 同一父节点的左右子节点连接
+            if (head.next != null) {
+                head.right.next = head.next.left;// 不同父节点的子节点连接
+            }
+            head = head.next;// 同一层的下一个父节点
+        }
+        leftmost = leftmost.left;// 下一层的最左节点
+    }
+    return root;
+}
+// 2. 层序遍历，都适用
+public Node connect(Node root) {
+    if (root == null) return null;
+    Queue<Node> queue = new LinkedList<>();
+    queue.offer(root);
+    
+    while (!queue.isEmpty()) {
+        int size = queue.size();
+        Node prev = null;
+        
+        for (int i = 0; i < size; i++) {
+            Node node = queue.poll();
+            if (prev != null) prev.next = node;
+            prev = node;
+            
+            if (node.left != null) queue.offer(node.left);
+            if (node.right != null) queue.offer(node.right);
+        }
+    }
+    return root;
+}
+```
 
 ## 动态规划
 动态规划：**将复杂问题分解为更小子问题**。  
