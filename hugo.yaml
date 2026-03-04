@@ -22,7 +22,7 @@ languages:
             description:  
     zh-cn:
         languageName: 中文
-        title: 答案说明所有
+        title: NEVERMORE
         weight: 2
         params:
             description:  
@@ -58,7 +58,7 @@ params:
 
     sidebar:
         emoji: 🍥
-        subtitle: 个人资源·经验总结库
+        subtitle: 经验总结·资源库
         avatar:
             enabled: true
             local: true

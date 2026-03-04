@@ -525,3 +525,136 @@ return dp[target];
 
 **多维背包：**
  ***474.*** 一和零
+
+
+## 单调栈/队列
+适用于需要**找到第一个满足条件的元素**的题目。 
+
+可以理解为排队，每次遇到新元素，判断已经在排队的元素（栈内元素）是否满足条件，满足则出队，不满足继续排队。新元素第一次肯定入队。  
+
+单调栈的本质是空间换时间，在一次遍历中维护一个单调递增/递减的栈。
+
+### 题目
+***42. 接雨水***
+```java
+// 双指针法
+public int trap(int[] height) {
+    int left = 0, right = height.length - 1;// 双指针
+    int leftMax = 0, rightMax = 0;
+    int ans = 0;
+
+    while (left<right) {
+        if (height[left]<height[right]) {// 短板效应，更新较矮的指针
+            if (height[left] >= leftMax) {leftMax=height[left];} 
+            else {ans += leftMax-height[left];}
+            left++;
+        } else {
+            if (height[right] >= rightMax) {rightMax = height[right];} 
+            else {ans += rightMax-height[right];}
+            right--;
+        }
+    }
+    return ans;
+}
+// 单调栈法
+public int trap(int[] height) {
+    int ans = 0;
+    Deque<Integer> stack = new ArrayDeque<>();
+    for (int i = 0; i < height.length; i++) {
+        while (!stack.isEmpty() && height[i] > height[stack.peek()]) {
+            int top = stack.pop();
+            if (stack.isEmpty()) { break; }
+            int left = stack.peek();
+            int width = i - left - 1;
+            int boundedHeight = Math.min(height[i], height[left]) - height[top];
+            ans += width * boundedHeight;
+        }
+        stack.push(i);
+    }
+    return ans;
+}
+```
+
+***84. 柱状图中最大的矩形***
+接雨水找到两侧第一个比当前柱子更高的柱子，计算面积。  
+本题找到两侧第一个比当前柱子更矮的柱子，计算面积。
+```java
+public int largestRectangleArea(int[] heights) {
+    Stack<Integer> stack = new Stack<>();
+    int maxArea = 0;
+    for (int i = 0; i <= heights.length; i++) {
+        int currentHeight = (i == heights.length) ? 0 : heights[i];// 最后多加一个0，保证所有柱子都能出栈
+        while (!stack.isEmpty() && currentHeight < heights[stack.peek()]) {
+            int height = heights[stack.pop()];
+            int width = (i == heights.length) ? i : i - stack.peek() - 1;
+            maxArea = Math.max(maxArea, height * width);
+        }
+        stack.push(i);
+    }
+    return maxArea;
+}
+// 双指针法：预处理每个柱子左右第一个比它更矮的柱子索引，计算面积(minRightIndex[i]-minLeftIndex[i]-1)*heights[i]。
+```
+完备性讨论：
+- 怀疑：对于1 4 2 3中的4来说，其左右均边没有更高的柱子，面积为4。但其组成的最大矩形面积应为4 2 3组成的6。 
+
+这并不代表算法不完备，因为算法的目标是找到每个柱子为高的最大矩形面积，而不是找到全局最大矩形面积。
+4 2 3组成的6实际是以2为高求得的矩形面积。
+- 证明：算法遍历了每一根柱子i，并在每根柱子i入栈时，计算了以i为高的最大矩形面积。
+
+***739. 每日温度***
+ans[i]求第一个比第i天温度高的日期距离i几天。
+解题需要获取某天温度和更高温度的索引差，因此单调栈存放索引。
+```java
+for (int i = 0; i < n; i++) {
+    int currentTemp = temperatures[i];      
+    // 当栈不为空，且当前温度大于栈顶索引对应的温度时
+    while (!stack.isEmpty() && currentTemp>temperatures[stack.peek()]) {
+        ans[stack.pop()] = i-prevIndex;
+    }
+    stack.push(i);
+}
+```
+
+***496. 下一个更大元素 I***
+找出 nums1 中每个元素在 nums2 中的下一个更大元素，没有则返回-1。
+结果要求元素的值，因此单调栈存放元素值。
+```java
+public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+    // Map 用于存储 nums2 中每个元素及其对应的下一个更大元素
+    Map<Integer, Integer> map = new HashMap<>();
+    Deque<Integer> stack = new ArrayDeque<>();
+
+    // 遍历 nums2 构建单调栈
+    for (int num : nums2) {
+        while (!stack.isEmpty() && num>stack.peek()) {
+            map.put(stack.pop(),num);
+        }
+        stack.push(num);
+    }
+
+    int[] res = new int[nums1.length];
+    for (int i = 0; i < nums1.length; i++) {
+        res[i] = map.getOrDefault(nums1[i],-1);// 没有更大的元素，返回-1
+    }
+
+    return res;
+}
+```
+
+***503. 下一个更大元素 II***
+注意要循环数组，注意三点：  
+1.需要遍历两遍数组for (int i = 0; i < 2*n; i++)
+2.栈内存放索引时需要对n取模stack.push(i%n)
+3.只有i < n时才入栈，保证栈内元素索引不重复
+```java
+for (int i = 0; i < 2*n; i++) {
+    int num = nums[i%n];
+    // 单调栈逻辑：如果当前元素大于栈顶索引对应的元素
+    while (!stack.isEmpty() && num>nums[stack.peek()]) {
+        res[stack.pop()] = num;
+    }
+    // 只需要在第一轮遍历时将索引入栈
+    if (i<n) stack.push(i);
+}
+```
