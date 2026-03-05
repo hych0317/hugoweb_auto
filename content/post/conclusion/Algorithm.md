@@ -334,24 +334,69 @@ while (!stack.isEmpty()) {
 顺序存储即使用数组，适合完全二叉树。节点i的左子节点为2i+1，右子节点为2i+2。  
 链式存储即使用节点类，适合各种二叉树。
 
+### 递归问题
+从局部到全局，**每个节点的处理都遵循相同的原则**，因此可以递归。  
+
+构建递归函数：  
+1. **信息传递**：需要谁的？给谁传递？
+    自底向上（110题）：需要子节点信息，给父节点返回信息。虽然节点是从上到下访问的，但信息传递方向从下到上。
+    自顶向下（257题）：需要父节点信息，给子节点传递信息。
+2. **递归出口**：
+节点为 null 或 叶子节点 时，做特殊处理。
+
+
 ### 题目
-101. 对称二叉树
+
+#### 深度与路径类
+
+***513. 找树左下角的值***
+方法1：递归
+构建函数思路：根据信息判断
+
+- 二叉树节点的信息：a.左右子节点，b.节点值。  
+需要的信息：c.当前节点所在深度。  
+- 函数需要完成的：
+    提供递归出口
+    判断是否更新结果（b,c）
+    访问子节点（a）
 ```java
-public boolean isSymmetric(TreeNode root) {
-    if (root == null) return true;
-    return dfs(root.left, root.right);
+private int maxDepth = 0;
+private int leftmostValue;
+public int findBottomLeftValue(TreeNode root) {
+    dfs(root, 1);
+    return leftmostValue;
 }
-private boolean dfs(TreeNode left, TreeNode right) {
-    if (left == null && right == null) return true;
-    if (left == null || right == null || left.val != right.val) return false;
-    return dfs(left.left, right.right) && dfs(left.right, right.left);
+private void dfs(TreeNode node, int depth) {
+    if (node == null) { return; }
+    if (depth > maxDepth) {
+        maxDepth = depth;
+        leftmostValue = node.val;
+    }
+    dfs(node.left, depth + 1);// 先访问左子节点，该函数会更新maxDepth，因此访问同一层右子节点时不会覆盖结果。
+    dfs(node.right, depth + 1);
 }
 ```
 
-110. 平衡二叉树
-比较高度，则递归使用后序遍历。
+方法2：层序遍历
+调换左右节点入队顺序，每层最后一个被弹出的节点为最左节点，就无需额外的判断了。
+```java
+public int findBottomLeftValue(TreeNode root) {
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+    while (!queue.isEmpty()) {
+        root = queue.poll();
+        if (root.right != null) queue.offer(root.right);
+        if (root.left != null) queue.offer(root.left);
+    }
+    return root.val; // 最后一个被弹出的就是最左下角的
+}
+```
 
 111. 二叉树的最小深度
+最大深度只需要看层序遍历的总层数，而最小深度需要在遍历过程中判断是否为叶子节点。  
+因为层序遍历自上而下、从左到右，因此当遇到第一个叶子节点时，当前层数即为最小深度。  
+
+第112题.路径总和 的层序遍历解法采用了两个队列同步出入队列，一个存储节点，一个存储当前路径和。不具体展开了。
 ```java
 // 层序遍历：当遇到第一个叶子节点时，当前层数即为最小深度。
 while (!queue.isEmpty()){
@@ -379,6 +424,76 @@ public int minDepth(TreeNode root) {
 }
 ```
 
+257. 二叉树的所有路径
+子节点需要父节点信息（路径），因此自顶向下递归。
+```java
+class Solution {
+    public List<String> binaryTreePaths(TreeNode root) {
+        List<String> res = new ArrayList<>();
+        constructPaths(root,"",res);
+        return res;
+    }
+
+    private void constructPaths(TreeNode node, String path, List<String> res) {
+        if (node!=null) {
+            path += Integer.toString(node.val);
+            if (node.left == null && node.right == null) {
+                res.add(path);
+            } else {
+                path+="->";
+                constructPaths(node.left,path,res);
+                constructPaths(node.right,path,res);
+            }
+        }
+    }
+}
+```
+
+
+
+#### 树的属性判断类
+
+***101. 对称二叉树***
+```java
+public boolean isSymmetric(TreeNode root) {
+    if (root == null) return true;
+    return dfs(root.left, root.right);
+}
+private boolean dfs(TreeNode left, TreeNode right) {
+    if (left == null && right == null) return true;
+    if (left == null || right == null || left.val != right.val) return false;
+    return dfs(left.left, right.right) && dfs(left.right, right.left);
+}
+```
+
+110. 平衡二叉树
+父节点需要子节点信息（高度），因此自底向上递归。
+```java
+class Solution {
+    public boolean isBalanced(TreeNode root) {
+        return height(root)!=-1;
+    }
+
+    private int height(TreeNode node) {
+        if (node == null) {return 0;}// 递归出口
+        
+        // 获取左右子树高度并剪枝
+        int leftHeight = height(node.left);
+        if (leftHeight==-1) {return -1;}// 剪枝
+        
+        int rightHeight = height(node.right);
+        if (rightHeight==-1) {return -1;}// 剪枝
+        
+        // 对信息进行处理
+        if (Math.abs(leftHeight-rightHeight) > 1) {return -1;}
+        
+        // 返回当前节点高度
+        return Math.max(leftHeight,rightHeight)+1;
+    }
+}
+```
+
+#### 节点处理类
 
 ***116.*** 填充每个节点的下一个右侧节点指针
 给定一个完美二叉树，填充每个节点的 next 指针，使其指向下一个右侧节点。如果找不到下一个右侧节点，则将 next 指针设置为 NULL。
@@ -422,6 +537,88 @@ public Node connect(Node root) {
     return root;
 }
 ```
+
+404. 左叶子之和
+注意到叶子节点本身并不能判断其是否为左叶子节点。
+```java
+// 父级预判：通过root.left判断是左叶子。
+public int sumOfLeftLeaves(TreeNode root) {
+    if (root == null) return 0;
+    int sum = 0;
+    if (root.left != null && root.left.left == null && root.left.right == null) {
+        sum += root.left.val;
+    }
+    return sum + sumOfLeftLeaves(root.left) + sumOfLeftLeaves(root.right);
+}
+
+// 叶子节点作为递归出口：添加标记
+public int sumOfLeftLeaves(TreeNode root) {
+    return dfs(root, false); // 根节点不是任何人的左孩子
+}
+
+private int dfs(TreeNode node, boolean isLeft) {
+    if (node == null) return 0;
+    
+    if (node.left == null && node.right == null) {
+        return isLeft ? node.val : 0;
+    }
+    // 左true 右false
+    return dfs(node.left, true) + dfs(node.right, false);
+}
+```
+
+#### 区间切分构造类
+654. 最大二叉树
+```java
+public TreeNode constructMaximumBinaryTree(int[] nums) {
+    return build(nums,0,nums.length-1);
+}
+
+private TreeNode build(int[] nums, int left, int right) {
+    if (left>right) {return null;}// 注意等于号
+
+    int maxIndex = left;
+    for (int i = left+1; i <= right; i++) {
+        if (nums[i] > nums[maxIndex]) {
+            maxIndex = i;
+        }
+    }
+
+    TreeNode root = new TreeNode(nums[maxIndex]);
+    // 注意向下传递的左右边界
+    root.left = build(nums,left,maxIndex-1);
+    root.right = build(nums,maxIndex+1,right);
+
+    return root;
+}
+```
+
+106. 从中序与后序遍历序列构造二叉树
+```java
+public TreeNode buildTree(int[] inorder, int[] postorder) {
+    Map<Integer, Integer> indexMap = new HashMap<>();
+    for (int i = 0; i < inorder.length; i++) {
+        indexMap.put(inorder[i], i);
+    }
+    return build(inorder, postorder, 0, inorder.length - 1, 0, postorder.length - 1, indexMap);
+}
+private TreeNode build(int[] inorder, int[] postorder, int inLeft, int inRight, int postLeft, int postRight, Map<Integer, Integer> indexMap) {
+    if (inLeft > inRight || postLeft > postRight) {
+        return null;
+    }
+
+    int rootVal = postorder[postRight];
+    TreeNode root = new TreeNode(rootVal);
+    int rootIndex = indexMap.get(rootVal);
+    int leftSize = rootIndex - inLeft;
+
+    root.left = build(inorder, postorder, inLeft, rootIndex - 1, postLeft, postLeft + leftSize - 1, indexMap);
+    root.right = build(inorder, postorder, rootIndex + 1, inRight, postLeft + leftSize, postRight - 1, indexMap);
+
+    return root;
+}
+```
+
 
 ## 动态规划
 动态规划：**将复杂问题分解为更小子问题**。  
@@ -536,8 +733,9 @@ return dp[target];
 
 ### 题目
 ***42. 接雨水***
+当前元素作为*坑底*，找到左右第一个比它更高的元素，计算雨水量。
 ```java
-// 双指针法
+// 双指针法：从两端向中间遍历，更新左右最大高度，计算雨水量。
 public int trap(int[] height) {
     int left = 0, right = height.length - 1;// 双指针
     int leftMax = 0, rightMax = 0;
@@ -556,7 +754,8 @@ public int trap(int[] height) {
     }
     return ans;
 }
-// 单调栈法
+// 单调栈法：遍历数组时，单调栈会找到当前元素作为*坑底*，左右第一个比它更高的元素，计算雨水量。
+// 完备性讨论：算法遍历了每个元素，找到其对应的最大左右边界，因此算法是完备的。
 public int trap(int[] height) {
     int ans = 0;
     Deque<Integer> stack = new ArrayDeque<>();
@@ -576,6 +775,8 @@ public int trap(int[] height) {
 ```
 
 ***84. 柱状图中最大的矩形***
+当前元素作为*矩形高度*。
+
 接雨水找到两侧第一个比当前柱子更高的柱子，计算面积。  
 本题找到两侧第一个比当前柱子更矮的柱子，计算面积。
 ```java
@@ -586,7 +787,7 @@ public int largestRectangleArea(int[] heights) {
         int currentHeight = (i == heights.length) ? 0 : heights[i];// 最后多加一个0，保证所有柱子都能出栈
         while (!stack.isEmpty() && currentHeight < heights[stack.peek()]) {
             int height = heights[stack.pop()];
-            int width = (i == heights.length) ? i : i - stack.peek() - 1;
+            int width = stack.isEmpty() ? i : i - stack.peek() - 1;
             maxArea = Math.max(maxArea, height * width);
         }
         stack.push(i);
@@ -597,10 +798,10 @@ public int largestRectangleArea(int[] heights) {
 ```
 完备性讨论：
 - 怀疑：对于1 4 2 3中的4来说，其左右均边没有更高的柱子，面积为4。但其组成的最大矩形面积应为4 2 3组成的6。 
+4 2 3组成的6实际是以2为高求得的矩形面积，而不是以4为高。  
 
-这并不代表算法不完备，因为算法的目标是找到每个柱子为高的最大矩形面积，而不是找到全局最大矩形面积。
-4 2 3组成的6实际是以2为高求得的矩形面积。
-- 证明：算法遍历了每一根柱子i，并在每根柱子i入栈时，计算了以i为高的最大矩形面积。
+这并不代表算法不完备，因为算法的目标是遍历每个柱子为高的最大矩形面积，之后比较出全局最大面积。而不是直接找到全局最大矩形面积。
+- 证明：算法**遍历了以每根柱子i**为高的矩形面积，并通过单调栈找到每根柱子对应的最大宽度。
 
 ***739. 每日温度***
 ans[i]求第一个比第i天温度高的日期距离i几天。
