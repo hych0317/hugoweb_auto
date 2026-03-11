@@ -21,6 +21,15 @@ git error:fatal: the remote end hung up unexpectedly
 fatal: early EOF
 网络问题，重新下载
 
+### Kafka
+windows启动流程：
+第一步：生成集群ID
+.\bin\windows\kafka-storage.bat random-uuid
+第二步：格式化存储目录
+.\bin\windows\kafka-storage.bat format -t <你的集群ID> -c .\config\server.properties <--standalone>
+第三步：启动Kafka
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
 ## 机器学习库错误
 ### torch
 error:module 'torch.library' has no attribute 'register_fake'
