@@ -1,4 +1,9 @@
-# RAG项目代码分析文档
++++
+title = 'RAG项目代码分析'
+date = 2026-3-12T14:21:14+08:00
+draft = false
+categories=['conclusion']
++++
 
 > 基于真实代码分析，版本：Spring Boot 3.4.2 / Vue 3 + Vite
 
