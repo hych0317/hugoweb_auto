@@ -60,7 +60,7 @@ links:
 
 ## 图片
     ![描述](路径 "可选title")
-![example](post/instruction/als.png)  
+![example](post/tools/markdown/als.png)  
 给图片添加链接  
 
     [![描述](路径)](链接) //图片链接
