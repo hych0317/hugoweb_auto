@@ -286,9 +286,10 @@ void dfs(TreeNode root, List<Integer> list) {
     if (root == null) {
         return;
     }
-    result.add(root.val);
-    preorder(root.left, result);
-    preorder(root.right, result);
+    result.add(root.val);// 代码处理部分
+    // 子节点访问部分
+    dfs(root.left, result);
+    dfs(root.right, result);
 }
 // 层序遍历
 // // 也可以是Queue<TreeNode> queue = new LinkedList<>(); Deque支持更多操作，性能更好
@@ -340,7 +341,7 @@ while (!stack.isEmpty()) {
 构建递归函数：  
 1. **信息传递**：需要谁的？给谁传递？
     自底向上（110题）：需要子节点信息，给父节点返回信息。虽然节点是从上到下访问的，但信息传递方向从下到上。
-    自顶向下（257题）：需要父节点信息，给子节点传递信息。
+    自顶向下（98、257题）：需要父节点信息，给子节点传递信息。
 2. **递归出口**：
 节点为 null 或 叶子节点 时，做特殊处理。
 
@@ -349,7 +350,7 @@ while (!stack.isEmpty()) {
 
 #### 深度与路径类
 
-***513. 找树左下角的值***
+***引子：513. 找树左下角的值***
 方法1：递归
 构建函数思路：根据信息判断
 
@@ -452,6 +453,20 @@ class Solution {
 
 
 #### 树的属性判断类
+
+***98. 验证二叉搜索树***
+自顶向下传递父节点范围，判断当前节点是否在区间内。
+```java
+public boolean isValidBST(TreeNode root) {
+    return isValidBST(root, Long.MIN_VALUE, Long.MAX_VALUE);// 注意这里Long大写L
+}
+
+private boolean isValidBST(TreeNode node, long min, long max) {
+    if (node == null) return true;
+    if (node.val <= min || node.val >= max) return false;
+    return isValidBST(node.left, min, node.val) && isValidBST(node.right, node.val, max);
+}
+```
 
 ***101. 对称二叉树***
 ```java
