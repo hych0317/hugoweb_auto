@@ -8,7 +8,7 @@ categories = ["deep-learning"]
 
 ## 基础部件
 基本流程：
-![steps](./steps.png)
+![steps](post/deep-learning/transformers/steps.png)
 ### tokenizer
 ```python
 from transformers import AutoTokenizer
@@ -263,10 +263,10 @@ peft_model = PeftModel.from_pretrained(model=model, model_id="./output/checkpoin
 
 ### P-tuning/Prefix tuning
 P-tuning把prompt加在输入embedding层的前缀，而Prefix tuning将kv值作为前缀加在模型的每一层前，而不仅仅是输入层。  
-![prefix tuning](./prefix.png)
+![prefix tuning](post/deep-learning/transformers/prefix.png)
 
 原理(类似kv缓存的思想):
-![prefix tuning](./prefix_kvcache.png)
+![prefix tuning](post/deep-learning/transformers/prefix_kvcache.png)
 因为对于扩展后的KV矩阵，Qm\*n,K(m+x)\*n,V(m+x)\*n而言,Q·KT得m\*(m+k)维矩阵，再乘V得m\*n维矩阵，和原矩阵相乘维度一样。  
 ```python
 from peft import PrefixTuningConfig, get_peft_model, TaskType
@@ -398,12 +398,12 @@ pipeline parallel: 每个GPU加载模型不同的层
 tensor parallel: 把同一层的各部分参数拆分到各个GPU上
 
 3D并行:
-![3Dpara](./3Dpara.png)
+![3Dpara](post/deep-learning/transformers/3Dpara.png)
 图中:2(数据并行)\*4(流水并行|横向箭头,代表不同层)\*4(张量并行|竖向箭头,同层的不同参数)=32GPUs  
 解释:模型32层,每8层分成一个流水并行块;每个流水并行块分成4个张量并行块,每个张量并行块有4个GPU,共16个GPU;再乘以2行数据并行=32GPUs    
 
 ### Distributed DataParallel
-![datapara](./datapara.png)
+![datapara](post/deep-learning/transformers/datapara.png)
 
 ```python
 # 指定使用GPU 0, 1和2（不设置device_ids或令其=None，则默认使用所有GPU）

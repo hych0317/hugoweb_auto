@@ -7,7 +7,7 @@ categories = ["deep-learning"]
 
 ## 激活函数
 引入激活函数是为了增加神经网络模型的非线性。若没有激活函数的每层都相当于矩阵相乘。没有激活函数的神经网络叠加了若干层之后，还是一个线性变换，与单层感知机无异。
-![激活函数示意图](./main.png)
+![激活函数示意图](post/deep-learning/activation_function/main.png)
 
 ### 分类
 * 饱和激活函数： sigmoid、 tanh...
@@ -34,7 +34,7 @@ $$\sigma(x) = \frac{1}{1+e^{-x}}$$
 其导数为：
 $$\sigma'(x) =  \frac{\exp(-x)}{(1+e^{-x})^2} = \sigma(x)(1-\sigma(x))$$
 图像：  
-![sigmoid函数图像](./sigmoid.png)  
+![sigmoid函数图像](post/deep-learning/activation_function/sigmoid.png)  
 
 优点：
 1. Sigmoid 函数的输出范围是 0 到 1。预测值非常接近0/1，可以用于表示二分类的类别或者用于表示置信度。
@@ -53,7 +53,7 @@ $$softmax(x_i) = \frac{\exp(x_i)}{\sum_{j}\exp(x_j)}$$
 对于长度为K的任意实向量，Softmax函数可以将其压缩为长度为K，值在[0,1]范围内，并且向量中元素的总和为1的实向量（即概率分布向量）。其值反映了该向量中各个元素的概率。
 
 输出层使用例：  
-![softmax函数图像](./softmax_exp.png)  
+![softmax函数图像](post/deep-learning/activation_function/softmax_exp.png)  
 #### tanh函数
 $$tanh(x) = \frac{\exp(x)-\exp(-x)}{\exp(x)+\exp(-x)}$$
 其导数为：
@@ -62,7 +62,7 @@ $$tanh'(x) = 1-tanh^2(x)$$
 \[tanh(x) = 2\sigma(2x)-1\]
 
 图像：  
-![tanh函数图像](./tanh.png)  
+![tanh函数图像](post/deep-learning/activation_function/tanh.png)  
 
 优点：
 1. 函数以 0 为中心，输出范围是 -1 到 1。
@@ -78,7 +78,7 @@ $$softsign(x) = \frac{x}{1+|x|}$$
 $$softsign'(x) = \frac{1}{1+|x|^2}$$
 
 图像：  
-![softsign函数图像](./softsign.png)  
+![softsign函数图像](post/deep-learning/activation_function/softsign.png)  
 
 优点：
 1. 曲线更平坦、梯度下降更慢，表明它可以更高效地学习
@@ -91,7 +91,7 @@ $$softsign'(x) = \frac{1}{1+|x|^2}$$
 $$ReLU(x) = max(0,x)$$
 
 图像：  
-![ReLU函数图像](./relu.png)  
+![ReLU函数图像](post/deep-learning/activation_function/relu.png)  
 
 优点：
 1. 计算简单，速度快。
@@ -107,7 +107,7 @@ $$ReLU(x) = max(0,x)$$
 $$softplus(x) = \ln(1+e^x)$$
 
 图像：  
-![softplus函数图像](./softplus.png)  
+![softplus函数图像](post/deep-learning/activation_function/softplus.png)  
 
 特点：
 1. Softplus 是一个平滑函数，在所有点上都可微。这意味着它在反向传播时不会出现像 ReLU 那样的导数不连续问题。
@@ -118,7 +118,7 @@ $$softplus(x) = \ln(1+e^x)$$
 $$Leaky\ ReLU(x) = max(\alpha x,x)$$
 
 图像：  
-![Leaky ReLU函数图像](./Leaky_ReLU.png)  
+![Leaky ReLU函数图像](post/deep-learning/activation_function/Leaky_ReLU.png)  
 
 优点：
 1. 解决了ReLU函数的死亡问题。
@@ -138,7 +138,7 @@ $$PReLU(x) = max(\alpha x,x)$$
 $$ELU(x) = \left\{ \begin{array}{ll} \alpha(e^x-1) & x<0 \\ x & x\geq0 \end{array} \right. $$
 
 图像：  
-![ELU函数图像](./ELU.png)  
+![ELU函数图像](post/deep-learning/activation_function/ELU.png)  
 
 优点：
 1. ELU试图将激活函数的输出均值接近于零，使正常梯度更接近于单位自然梯度，从而加快学习速度。
@@ -152,7 +152,7 @@ $$ELU(x) = \left\{ \begin{array}{ll} \alpha(e^x-1) & x<0 \\ x & x\geq0 \end{arra
 $$SELU(x) = \lambda\left\{ \begin{array}{ll} \alpha(e^x-1) & x<0 \\ x & x\geq0 \end{array} \right. $$
 
 图像：  
-![SELU函数图像](./SELU.png)  
+![SELU函数图像](post/deep-learning/activation_function/SELU.png)  
 
 特点：
 1. SELU 允许构建一个映射 g，其性质能够实现 SNN(自归一化神经网络)。
@@ -169,7 +169,7 @@ SNN网络激活函数的要求：
 $$swish(x) = x\sigma(x)$$
 
 图像：  
-![swish函数图像](./swish.png)  
+![swish函数图像](post/deep-learning/activation_function/swish.png)  
 
 特点：
 1. 与sigmoid函数类似，但更平滑，在优化和泛化中起了重要作用。
