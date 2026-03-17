@@ -610,25 +610,30 @@ private TreeNode build(int[] nums, int left, int right) {
 
 106. 从中序与后序遍历序列构造二叉树
 ```java
+private Map<Integer, Integer> indexMap;
+private int[] postorder;
+private int postIndex;
+
 public TreeNode buildTree(int[] inorder, int[] postorder) {
-    Map<Integer, Integer> indexMap = new HashMap<>();
+    this.postorder = postorder;
+    this.postIndex = postorder.length - 1;
+    this.indexMap = new HashMap<>();
     for (int i = 0; i < inorder.length; i++) {
         indexMap.put(inorder[i], i);
     }
-    return build(inorder, postorder, 0, inorder.length - 1, 0, postorder.length - 1, indexMap);
+    return build(0, inorder.length - 1);
 }
-private TreeNode build(int[] inorder, int[] postorder, int inLeft, int inRight, int postLeft, int postRight, Map<Integer, Integer> indexMap) {
-    if (inLeft > inRight || postLeft > postRight) {
+private TreeNode build(int inLeft, int inRight) {
+    if (inLeft > inRight) {
         return null;
     }
 
-    int rootVal = postorder[postRight];
+    int rootVal = postorder[postIndex--];
     TreeNode root = new TreeNode(rootVal);
     int rootIndex = indexMap.get(rootVal);
-    int leftSize = rootIndex - inLeft;
-
-    root.left = build(inorder, postorder, inLeft, rootIndex - 1, postLeft, postLeft + leftSize - 1, indexMap);
-    root.right = build(inorder, postorder, rootIndex + 1, inRight, postLeft + leftSize, postRight - 1, indexMap);
+    // 倒序读取后序：root -> right -> left
+    root.right = build(rootIndex + 1, inRight);
+    root.left = build(inLeft, rootIndex - 1);
 
     return root;
 }
