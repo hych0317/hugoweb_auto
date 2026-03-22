@@ -21,6 +21,72 @@ description = ''
 双指针：fast遍历数组，slow记录不等于 val 的个数（位置）。   
 if (nums[fast] != val) { nums[slow++] = nums[fast]; }
 
+***581.*** 最短无序连续子数组
+双指针：从两个方向遍历，找出中间无序数组的左右边界。
+```java
+// 示例1 2 6 5 3 4 7 8
+int max = Integer.MIN_VALUE;
+int min = Integer.MAX_VALUE;
+for (int i = 0; i < n; i++) {
+    
+    // 从左向右，找中间子数组的右边界
+    if (nums[i] >= max) {// 对于升序数组，当前元素应大于之前的max
+        max = nums[i];// 正常更新max
+    } else {// 比当前max小的（说明非升序）都在中子数组范围内
+        end = i;
+    }
+    // 从右向左，找左边界
+    if (nums[n - 1 - i] <= min) {// 正常更新min
+        min = nums[n - 1 - i];
+    } else {
+        start = n - 1 - i;
+    }
+}
+```
+
+***76.*** 最小覆盖子串
+滑动窗口：先统计t中各字符的频次，根据频次特征移动s的窗口
+输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+```java
+public String minWindow(String s, String t) {
+    if (s == null || t == null || s.length() < t.length()) {
+        return "";
+    }
+
+    int[] need = new int[128];
+    for (char c : t.toCharArray()) {need[c]++;}
+    // 统计t中各字符的频次
+
+    int left = 0, right = 0;
+    int count = t.length(); // t总字符数
+    int start = 0, minLen = Integer.MAX_VALUE;
+
+    while (right < s.length()) {
+        char c = s.charAt(right);
+
+        if (need[c] > 0) {count--;}// 是t中的字符，计数--
+        need[c]--;// 对每个字符都执行，
+        // 因此即使下面d是无关的字符时，其need的值也不会大于0
+        right++;
+
+        while (count == 0) {// 满足条件，收缩窗口
+            if (right - left < minLen) {// 先记录开始位置和长度
+                minLen = right-left;
+                start = left;
+            }
+            // 收缩窗口
+            char d = s.charAt(left);
+            if (need[d] == 0) {count++;}// 刚好用到的字符，移出窗口则count需要++
+            need[d]++;
+            left++;
+        }
+    }
+
+    return minLen == Integer.MAX_VALUE ? "" : s.substring(start, start+minLen);
+}
+```
+
 ***209.*** 长度最小的子数组
 滑动窗口：right指针扩展窗口，left指针收缩窗口。  
 注意收缩使用while循环。
@@ -55,6 +121,8 @@ return pA;
 ***206.*** 反转链表
 使用三个指针：pre，cur，**next**。next保存cur的下一个节点，防止断链。
 
+234. 回文链表
+使用快慢指针找到链表中点，原地反转后半部分链表（保证空间O(1)），然后比较前半部分和反转后的后半部分。
 
 ## 哈希表
 哈希表：**通过哈希函数将键映射到值**。  
@@ -340,7 +408,7 @@ while (!stack.isEmpty()) {
 
 构建递归函数：  
 1. **信息传递**：需要谁的？给谁传递？
-    自底向上（110题）：需要子节点信息，给父节点返回信息。虽然节点是从上到下访问的，但信息传递方向从下到上。
+    自底向上（110、236题）：需要子节点信息，给父节点返回信息。虽然节点是从上到下访问的，但信息传递方向从下到上。
     自顶向下（98、257题）：需要父节点信息，给子节点传递信息。
 2. **递归出口**：
 节点为 null 或 叶子节点 时，做特殊处理。
@@ -358,8 +426,8 @@ while (!stack.isEmpty()) {
 需要的信息：c.当前节点所在深度。  
 - 函数需要完成的：
     提供递归出口
-    判断是否更新结果（b,c）
-    访问子节点（a）
+    进行处理（b,c）
+    访问左右子节点（a）
 ```java
 private int maxDepth = 0;
 private int leftmostValue;
@@ -553,6 +621,27 @@ public Node connect(Node root) {
 }
 ```
 
+236. 二叉树的最近公共祖先
+传递的信息：当前节点及其子树**是否包含p或q**，自底向上  
+代码的设计：直接用null表示不包含；直接将节点作为返回值，不需要额外的变量记录答案。  
+对于四种情况的讨论：
+1.均为空：不包含，返回null
+2.一个空一个不空：两种情况，非空的那个节点要么表示包含了p或q；要么此时非空的那个已经在公共祖先节点上方，其指向的已经是公共祖先节点，回传即可
+3.两个都非空：说明当前root即是公共祖先节点，回传
+```java
+public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) {return root;}
+
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    
+    // 对于left/right的四种情况判断（有有、有无、无有、无无）
+    if(left == null) return right;
+    if(right == null) return left;
+    return root;// 两个都非空
+}
+```
+
 404. 左叶子之和
 注意到叶子节点本身并不能判断其是否为左叶子节点。
 ```java
@@ -609,6 +698,14 @@ private TreeNode build(int[] nums, int left, int right) {
 ```
 
 106. 从中序与后序遍历序列构造二叉树
+后序遍历顺序是 左 → 右 → 根，倒着读就是 根 → 右 → 左  
+从后序序列获取第一个根节点->在中序序列中找到，切分左右子树->从后序序列找到左右子树的根节点  
+
+前序序列也是同理
+
+注意postIndex的全局/局部问题：  
+- 如果为全局指针，，则每次递归--；
+- 如果为局部变量，则需要记录子树长度，根据区间长度计算。
 ```java
 private Map<Integer, Integer> indexMap;
 private int[] postorder;
@@ -616,7 +713,7 @@ private int postIndex;
 
 public TreeNode buildTree(int[] inorder, int[] postorder) {
     this.postorder = postorder;
-    this.postIndex = postorder.length - 1;
+    this.postIndex = postorder.length - 1;// 从最后开始读取
     this.indexMap = new HashMap<>();
     for (int i = 0; i < inorder.length; i++) {
         indexMap.put(inorder[i], i);
@@ -624,16 +721,30 @@ public TreeNode buildTree(int[] inorder, int[] postorder) {
     return build(0, inorder.length - 1);
 }
 private TreeNode build(int inLeft, int inRight) {
-    if (inLeft > inRight) {
-        return null;
-    }
+    if (inLeft > inRight) {return null;}
 
     int rootVal = postorder[postIndex--];
     TreeNode root = new TreeNode(rootVal);
     int rootIndex = indexMap.get(rootVal);
-    // 倒序读取后序：root -> right -> left
+
     root.right = build(rootIndex + 1, inRight);
     root.left = build(inLeft, rootIndex - 1);
+
+    return root;
+}
+
+// 前序数组的局部index写法
+private TreeNode build(int preIndex, int begin, int end) {
+    if (begin>end) return null;
+
+    int rootVal = preorder[preIndex];
+    int inIndex = indexMap.get(rootVal);
+
+    TreeNode root = new TreeNode(rootVal);
+    int leftLen = inIndex - begin;
+
+    root.left  = build(preIndex+1, begin, inIndex-1);
+    root.right = build(preIndex+leftLen+1, inIndex+1, end);
 
     return root;
 }
@@ -822,6 +933,41 @@ public int largestRectangleArea(int[] heights) {
 
 这并不代表算法不完备，因为算法的目标是遍历每个柱子为高的最大矩形面积，之后比较出全局最大面积。而不是直接找到全局最大矩形面积。
 - 证明：算法**遍历了以每根柱子i**为高的矩形面积，并通过单调栈找到每根柱子对应的最大宽度。
+
+85. 最大矩形
+通过遍历每一行，将三维问题转化为上题的二维问题。
+```java
+for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
+        if (matrix[i][j] == '1') {
+            heights[j] += 1;
+        } else {
+            heights[j] = 0;
+        }
+    }
+    maxArea = Math.max(maxArea, maxRecArea(heights));
+}
+// 处理函数
+private int maxRecArea(int[] heights) {
+    int n = heights.length;
+    Stack<Integer> stack = new Stack<>();
+    int maxArea = 0;
+    int[] h = new int[n + 2];
+    System.arraycopy(heights, 0, h, 1, n);
+    
+    for (int i = 0; i < h.length; i++) {
+        while (!stack.isEmpty() && h[i] < h[stack.peek()]) {
+            int height = h[stack.pop()];
+            int width = i - stack.peek() - 1;
+            maxArea = Math.max(maxArea, height * width);
+        }
+        stack.push(i);
+    }
+    return maxArea;
+}
+
+```
+
 
 ***739. 每日温度***
 ans[i]求第一个比第i天温度高的日期距离i几天。
