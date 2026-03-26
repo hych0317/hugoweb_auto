@@ -18,6 +18,9 @@ Alt + Shift + 鼠标框选：选择矩形区域
 Ctrl + D：选中下一个相同内容
 Ctrl + Shift + L：选中所有相同内容
 
+4. 插入新行
+Ctrl + Enter：在当前行下方插入新行
+
 
 ## Linux
 ### 文件操作
