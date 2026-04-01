@@ -1,6 +1,6 @@
 +++
 title = 'Algorithm'
-date = 2024-08-24T21:01:10+08:00
+date = 2025-08-24T21:01:10+08:00
 draft = false
 categories = ["notes"]
 description = ''
@@ -344,23 +344,28 @@ public int[] topKFrequent(int[] nums, int k) {
 
 2. **遍历方式**：前序、中序、后序、层序。  
 *其实就是处理左右子节点的顺序不同：*  
-前序：根->左->右  
+前序：根->左->右  **约等于对应自顶向下**
 中序：左->根->右  
-后序：左->右->根  
+后序：左->右->根  **约等于对应自底向上**
 层序：按层从上到下、从左到右遍历。
+
+![二叉树遍历](post/programming/notes/assets/btTraversal.png)
+
+从整体视角看，**dfs函数返回当前节点的左右子树**（子树内部也按顺序排列）
+可以看到前序遍历的分布为根，左子树，右子树
 ```java
-// 递归前序遍历，中、后序则result.add分别在第二、三行
+递归中序遍历，前、后序即改变result.add位置
 void dfs(TreeNode root, List<Integer> list) {
     if (root == null) {
         return;
     }
+    
+    dfs(root.left, result);// 左子树
     result.add(root.val);// 代码处理部分
-    // 子节点访问部分
-    dfs(root.left, result);
-    dfs(root.right, result);
+    dfs(root.right, result);// 右子树
 }
-// 层序遍历
-// // 也可以是Queue<TreeNode> queue = new LinkedList<>(); Deque支持更多操作，性能更好
+层序遍历
+// 也可以是Queue<TreeNode> queue = new LinkedList<>(); Deque支持更多操作，性能更好
 Deque<TreeNode> queue = new ArrayDeque<>();
 queue.offer(root);
 while (!queue.isEmpty()) {
@@ -444,11 +449,11 @@ private void dfs(TreeNode node, int depth) {
     dfs(node.left, depth + 1);// 先访问左子节点，该函数会更新maxDepth，因此访问同一层右子节点时不会覆盖结果。
     dfs(node.right, depth + 1);
 }
-```
+
 
 方法2：层序遍历
 调换左右节点入队顺序，每层最后一个被弹出的节点为最左节点，就无需额外的判断了。
-```java
+
 public int findBottomLeftValue(TreeNode root) {
     Queue<TreeNode> queue = new LinkedList<>();
     queue.offer(root);
@@ -641,6 +646,35 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
     return root;// 两个都非空
 }
 ```
+968. 监控二叉树
+题目描述：给定一个二叉树，我们在树的节点上安装摄像头，摄像头可以监视其父节点、自身和直接子节点。计算监控整棵树所需的最少摄像头数量。  
+解法：**后序遍历（自底向上）**，根据左右子节点的状态判断自身状态，贪心决定是否放置摄像头。
+```java
+int ans=0;
+
+public int minCameraCover(TreeNode root) {
+    if (dfs(root) == 0) {ans++;}
+    return ans;
+}
+
+// 定义三个状态：0：该节点未被覆盖
+// 1：安装了摄像头；2：已被覆盖，但没摄像头
+private int dfs(TreeNode node) {
+    if (node == null) {return 2;}
+
+    int left =dfs(node.left);
+    int right = dfs(node.right);
+
+    if (left == 0 || right == 0) {// 有一个没有就需要安装
+        ans++;
+        return 1;
+    }
+    if (left == 1 || right == 1) {return 2;}// 有子节点装了，被覆盖到
+
+    return 0;
+}
+```
+
 
 404. 左叶子之和
 注意到叶子节点本身并不能判断其是否为左叶子节点。
@@ -671,6 +705,8 @@ private int dfs(TreeNode node, boolean isLeft) {
 }
 ```
 
+
+
 #### 区间切分构造类
 654. 最大二叉树
 ```java
@@ -697,7 +733,7 @@ private TreeNode build(int[] nums, int left, int right) {
 }
 ```
 
-106. 从中序与后序遍历序列构造二叉树
+***⭐106. 从中序与后序遍历序列构造二叉树***
 后序遍历顺序是 左 → 右 → 根，倒着读就是 根 → 右 → 左  
 从后序序列获取第一个根节点->在中序序列中找到，切分左右子树->从后序序列找到左右子树的根节点  
 
@@ -726,7 +762,7 @@ private TreeNode build(int inLeft, int inRight) {
     int rootVal = postorder[postIndex--];
     TreeNode root = new TreeNode(rootVal);
     int rootIndex = indexMap.get(rootVal);
-
+    // 全局指针，根右左遍历的顺序不可以换
     root.right = build(rootIndex + 1, inRight);
     root.left = build(inLeft, rootIndex - 1);
 
@@ -854,11 +890,193 @@ return dp[target];
 **多维背包：**
  ***474.*** 一和零
 
+## 贪心算法
+134. 加油站
+如果从加油站A出发最远只能到达加油站B，那么A B之间的任何一个加油站作为起点，都不可能越过B点。  
+所以下一个出发点直接选为(B+1)，使得只需要遍历一次数组。  
+（题目规定存在解是唯一的，因此只要totalOil证明存在后，新的index无需循环遍历数组证明存在）
+```java
+public int canCompleteCircuit(int[] gas, int[] cost) {
+    int totalOil = 0;
+    int index = 0;
+    int currOil = 0;
+    for (int i = 0; i < gas.length; i++) {
+        int diff = gas[i] - cost[i];
+        totalOil += diff;
+        currOil += diff;
+        if (currOil < 0) {
+            index = i+1;
+            currOil = 0;
+        }
+    }
+    return totalOil < 0 ? -1 : index;
+}
+```
+
+45. 跳跃游戏 II
+返回到达 n - 1 的最小跳跃次数。
+注意，nums数组的值表示在该位置可以跳跃的最大距离，可以跳到该距离内任意一个点。  
+```java
+public int jump(int[] nums) {
+    int cnt = 0;
+    int max = 0;
+    int end = 0;
+    for (int i = 0; i < nums.length-1; i++) {
+        max = Math.max(max, i+nums[i]);
+        // 当前一跳覆盖范围是i~end之间，范围内的每个点都可以作为下一跳的出发点
+        // 不关心具体在哪个点起跳，只关心最远范围，更新max
+        if (i==end) {
+            cnt++;
+            end = max;
+        }
+    }
+    return cnt;
+}
+```
+
+738. 单调递增的数字
+如果不递增，则将该位开始的低位设为9并借位减一。
+从后往前遍历。
+```java
+public int monotoneIncreasingDigits(int n) {
+    String s = Integer.toString(n);
+    char[] chars = s.toCharArray();
+    
+    // start 记录从哪一位开始全部变为 9
+    int start = chars.length; 
+    
+    for (int i = chars.length-1; i > 0; i--) {
+        if (chars[i-1] > chars[i]) {
+            chars[i-1]--;
+            start = i;
+        }
+    }
+    
+    for (int i = start; i < chars.length; i++) {
+        chars[i] = '9';
+    }
+    
+    return Integer.valueOf(String.valueOf(chars));
+}
+```
+
+### 两个维度
+***⭐135. 分发糖果***
+问题有两个维度的约束，既要和左边比又要和右边比。  
+分别从左右两个方向遍历。
+```java
+public int candy(int[] ratings) {
+    int n = ratings.length;
+    int[] candyVec = new int[n];
+    Arrays.fill(candyVec, 1);
+
+    // 从前向后遍历
+    for (int i = 1; i < ratings.length; i++) {
+        if (ratings[i] > ratings[i-1]) {
+            candyVec[i] = candyVec[i-1] + 1;
+        }
+    }
+
+    // 从后向前遍历
+    for (int i = ratings.length-1; i >= 1; i--) {
+        if (ratings[i-1] > ratings[i]) {
+            candyVec[i-1] = Math.max(candyVec[i-1], candyVec[i]+1);
+        }
+        
+    }
+
+    int result = 0;
+    for (int s : candyVec) {
+        result += s;
+    }
+    return result;
+}
+
+// 如果candy数组不赋初始值1，则如下表示
+for (int i = 0; i < n; i++) {// 前向后遍历
+    if (i > 0 && ratings[i] > ratings[i - 1]) {
+        candyVec[i] = candyVec[i - 1] + 1;
+    } else {candyVec[i] = 1;}
+}
+```
+
+406. 根据身高重建队列
+先按身高降序排序，再按k值直接插入（小个子插入不影响高个子）
+注意：比较器返回负数则升序，返回正数则降序。通过改变比较逻辑实现不同排序。
+```java
+public int[][] reconstructQueue(int[][] people) {
+    // 身高从大到小排（身高相同，k小的站前面）
+    Arrays.sort(people, (i,j) -> {
+        if (i[0] == j[0]) return i[1] - j[1];// k小在前
+        return j[0] - i[0];// h小在后
+    });
+
+    ArrayList<int[]> que = new ArrayList<>();
+
+    for (int[] p : people) {que.add(p[1], p);}
+    // 因为降序排序，因此k值就是p应该在的索引位置
+
+    return que.toArray(new int[que.size()][]);
+}
+```
+
+### 区间调度
+***435. 无重叠区间***
+返回需要移除的重叠区间的最小数量
+```java
+public int eraseOverlapIntervals(int[][] intervals) {
+    if (intervals.length == 0) return 0;
+    // 按区间的结束位置升序排序
+    Arrays.sort(intervals, (a,b) -> {return a[1] - b[1];});
+
+    int count = 1; // 记录非重叠区间的数量，初始为1
+    int edge = intervals[0][1]; // 记录当前非重叠区间的右边界
+
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] >= edge) {// 注意此处，大于右边界
+            count++;
+            edge = intervals[i][1];
+        }
+    }
+
+    return intervals.length - count;
+}
+```
+
+56. 合并区间
+合并所有重叠的区间
+```java
+public int[][] merge(int[][] intervals) {
+    if (intervals.length <= 1) {return intervals;}
+
+    Arrays.sort(intervals, (a, b) -> a[0] - b[0]);// 起点升序排序
+
+    List<int[]> res = new ArrayList<>();
+    int[] curr = intervals[0];
+    res.add(curr);
+
+    for (int[] interval : intervals) {
+        int currEnd = curr[1];
+        int nextStart = interval[0];
+        int nextEnd = interval[1];
+
+        if (currEnd >= nextStart) {
+            curr[1] = Math.max(curr[1], nextEnd);// res中存的是curr地址，会同步更新
+        } else {
+            curr = interval;
+            res.add(curr);
+        }
+    }
+
+    return res.toArray(new int[res.size()][]);
+}
+```
 
 ## 单调栈/队列
 适用于需要**找到第一个满足条件的元素**的题目。 
 
-可以理解为排队，每次遇到新元素，判断已经在排队的元素（栈内元素）是否满足条件，满足则出队，不满足继续排队。新元素第一次肯定入队。  
+可以理解为排队，每次遇到新元素，while比较栈顶元素与新元素的关系？满足则出队：不满足继续排队。
+**新元素第一次肯定入队**。因为比新元素小/大的元素都会被弹出。
 
 单调栈的本质是空间换时间，在一次遍历中维护一个单调递增/递减的栈。
 
@@ -905,11 +1123,10 @@ public int trap(int[] height) {
 }
 ```
 
-***84. 柱状图中最大的矩形***
+***⭐84. 柱状图中最大的矩形***
 当前元素作为*矩形高度*。
 
-接雨水找到两侧第一个比当前柱子更高的柱子，计算面积。  
-本题找到两侧第一个比当前柱子更矮的柱子，计算面积。
+接雨水找到两侧第一个比当前柱子更高的柱子，计算面积；本题找到两侧第一个比当前柱子更矮的柱子，计算面积。
 ```java
 public int largestRectangleArea(int[] heights) {
     Stack<Integer> stack = new Stack<>();
@@ -934,8 +1151,8 @@ public int largestRectangleArea(int[] heights) {
 这并不代表算法不完备，因为算法的目标是遍历每个柱子为高的最大矩形面积，之后比较出全局最大面积。而不是直接找到全局最大矩形面积。
 - 证明：算法**遍历了以每根柱子i**为高的矩形面积，并通过单调栈找到每根柱子对应的最大宽度。
 
-85. 最大矩形
-通过遍历每一行，将三维问题转化为上题的二维问题。
+***85. 最大矩形***
+通过遍历每一行，将矩阵问题转化为上题的直方图问题。
 ```java
 for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
