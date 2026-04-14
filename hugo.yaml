@@ -206,7 +206,7 @@ menu:
     social:
         - identifier: github
           name: GitHub
-          url: https://github.com/hych0317/hugoweb_auto
+          url: https://github.com/hych0317
           params:
               icon: brand-github
 

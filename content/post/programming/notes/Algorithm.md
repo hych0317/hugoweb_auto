@@ -1072,6 +1072,132 @@ public int[][] merge(int[][] intervals) {
 }
 ```
 
+## 回溯算法
+回溯通常维护一个全局的共享状态。大多应用于在不同的分支中探索 并 穷举所有可能性。
+
+回溯的题目代码都大同小异。
+***39. 组合总和***
+```java
+public List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(candidates, target, 0, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int[] candidates, int target, int start, List<Integer> path, List<List<Integer>> result) {
+    if (target == 0) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+    for (int i = start; i < candidates.length; i++) {
+        if (candidates[i] <= target) {
+            path.add(candidates[i]);
+            backtrack(candidates, target - candidates[i], i, path, result);
+            // 此处可以选择重复，因此start还是i。对于40题非重复就是i+1
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+***79. 单词搜索***
+遍历每一个起点，dfs每次探索四个方向，通过边界判断返回。  
+注意修改当前位置字符，dfs完后改回。回溯就体现在这里。
+```java
+public boolean exist(char[][] board, String word) {
+    int m = board.length;
+    int n = board[0].length;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (dfs(board, word, i, j, 0)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private boolean dfs(char[][] board, String word, int i, int j, int k) {
+    if (k == word.length()) {return true;}
+    if (i < 0 || i >= board.length || j < 0 || j >= board[0].length || board[i][j] != word.charAt(k)) {
+        return false;
+    }
+    
+    char temp = board[i][j];
+    board[i][j] = '*';// 将当前位改为非字母，避免后续重复使用。注意是单引号符合char，不可以是双引号
+    
+    boolean res = dfs(board, word, i+1, j, k + 1) ||
+                    dfs(board, word, i-1, j, k + 1) ||
+                    dfs(board, word, i, j+1, k + 1) ||
+                    dfs(board, word, i, j-1, k + 1);
+                    
+    board[i][j] = temp;
+    
+    return res;
+}
+```
+
+***131. 分割回文串***
+子字符串是连续的，因此如果当前不是回文串就不用往深探索了。
+```java
+class Solution {
+    public List<List<String>> partition(String s) {
+        List<List<String>> res = new ArrayList<>();
+        dfs(s, 0, new ArrayList<>(), res);
+        return res;
+    }
+
+    public void dfs(String s, int start, List<String> path, List<List<String>> res){
+        if(start == s.length()){
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for(int i=start;i<s.length();i++){
+            if(isPalindrome(s,start,i)){
+                path.add(s.substring(start,i+1));// 左闭右开，所以到i+1
+                dfs(s,i+1,path,res);
+                path.remove(path.size()-1);
+            }                
+        }
+    }
+
+    private boolean isPalindrome(String s, int begin, int end){
+        while(begin<end){
+            if(s.charAt(begin++)!=s.charAt(end--)){ return false; }
+        }
+        return true;
+    }
+}
+```
+
+491. 递增子序列
+主要注意去重的方式。
+```java
+public List<List<Integer>> findSubsequences(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    backtrack(nums, 0, new ArrayList<>(), res);
+    return res;
+}
+
+private void backtrack(int[] nums, int start, List<Integer> path, List<List<Integer>> res) {
+    if (path.size() >= 2) {
+        res.add(new ArrayList<>(path));
+    }
+    
+    Set<Integer> used = new HashSet<>();
+    for (int i = start; i < nums.length; i++) {
+        if ((!path.isEmpty() && nums[i] < path.get(path.size()-1)) || used.contains(nums[i])) {
+            continue;
+        }
+        
+        used.add(nums[i]);
+        path.add(nums[i]);
+        backtrack(nums, i+1, path, res);
+        path.remove(path.size()-1);
+    }
+}
+```
 ## 单调栈/队列
 适用于需要**找到第一个满足条件的元素**的题目。 
 
