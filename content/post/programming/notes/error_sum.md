@@ -31,15 +31,17 @@ windows启动流程：
 .\bin\windows\kafka-server-start.bat .\config\server.properties
 
 ## 机器学习库错误
-### torch
+1. torch
 error:module 'torch.library' has no attribute 'register_fake'
 torch和torchvision不匹配
 
-### NVIDIA CUDA
+2. NVIDIA CUDA
 error：libcusparse.so.12: undefined symbol: __nvJitLinkAddData_12_1, version libnvJitLink.so.12
 一般是重装torch（pip uninstall、pip install）解决，还有人提到软链接方法，优先考虑torch安装顺序的原因
 
-### transformers
+3. faiss-gpu
+直接使用pip install faiss-gpu-cu12  
+不用conda安装
 
 
 ## 程序写法错误

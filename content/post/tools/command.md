@@ -19,7 +19,7 @@ Ctrl + D：选中下一个相同内容
 Ctrl + Shift + L：选中所有相同内容
 
 4. 插入新行
-Ctrl + Enter：在当前行下方插入新行
+Ctrl + Enter：在当前行下方插入新行，无视光标位置直接换行
 
 
 ## Linux

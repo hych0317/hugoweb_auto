@@ -6,6 +6,17 @@ categories = ["notes"]
 description = ''
 +++
 
+## 复杂度
+
+大O复杂度关心的是：随着输入n的变化，算法的时间/空间占用变化的**趋势**。
+
+因此会忽略常数，忽略低阶项。
+
+比如：
+O(2) O(500) O(10000)都写成O(1)，表示常数级，不随n变化;  
+O(1000n)写成O(n)，都是线性增长;  
+O(3n^2+10n+100)写成O(n^2);  
+
 ## 数组
 1. 双指针
 - 有序数组：左右指针
@@ -13,8 +24,9 @@ description = ''
 2. 滑动窗口
 - 固定窗口：双指针确定窗口大小
 - 动态窗口：根据条件动态调整窗口
-3. 前缀和
+3. 前缀信息
 - 计算区间和：prefixSum[j] - prefixSum[i-1]
+- 前缀积 / 后缀积：左右两侧累计信息组合
 
 ### 题目
 ***27.*** 移除元素
@@ -87,9 +99,70 @@ public String minWindow(String s, String t) {
 }
 ```
 
+***438. 找到字符串中所有字母异位词***
+固定长度滑动窗口：窗口长度固定为 `p.length()`，统计窗口内字符频次是否与 p 相同。  
+变长窗口：根据字符是否平衡调整窗口长度，如果窗口长度和 p 等长则加入left。
+
+```python
+# 定长
+def findAnagrams(self, s, p):
+    n, m = len(s), len(p)
+    if n < m:
+        return []
+
+    need = [0] * 26
+    window = [0] * 26
+
+    for ch in p: # p中各字母个数
+        need[ord(ch) - ord('a')] += 1
+
+    ans = []
+
+    for index, ch in enumerate(s):
+        window[ord(ch) - ord('a')] += 1
+
+        if index >= m:# 移出窗口
+            out = s[index - m]
+            window[ord(out) - ord('a')] -= 1
+
+        if window == need:
+            ans.append(index - m + 1)
+
+    return ans
+
+# 变长
+def findAnagrams(self, s, p):
+    n, m = len(s), len(p)
+    if n < m:
+        return []
+
+    need = [0] * 26
+    for ch in p: # p中各字母个数
+        need[ord(ch) - ord('a')] += 1
+
+    ans = []
+    left=0
+
+    for right, ch in enumerate(s):
+        need[ord(ch) - ord('a')] -= 1
+
+        while need[ord(ch) - ord('a')]<0:
+            need[ord(s[left])-ord('a')] +=1
+            left += 1
+
+        if right-left+1 == m:
+            ans.append(left)
+
+    return ans
+```
+
 ***209.*** 长度最小的子数组
 滑动窗口：right指针扩展窗口，left指针收缩窗口。  
 注意收缩使用while循环。
+
+***238.*** 除自身以外数组的乘积
+前缀积 / 后缀积：answer[i] 等于 i 左侧所有元素乘积乘以 i 右侧所有元素乘积。  
+可以先从左到右写入前缀积，再从右到左用一个变量维护后缀积并乘到结果中。
 
 ***15.*** 【三数之和】
 排序+双指针：固定一个数，使用左右指针寻找另外两个数。
@@ -498,6 +571,65 @@ public int minDepth(TreeNode root) {
 }
 ```
 
+437. 路径总和 III
+路径不要求从根节点开始，也不要求到叶子节点结束，但方向必须向下。  
+自顶向下传递从根节点到当前节点的前缀和，用Map记录某个前缀和出现过几次。
+
+如果当前前缀和为curSum，目标路径和为targetSum，那么需要找到之前出现过的oldSum，使得：
+```text
+curSum - oldSum = targetSum
+oldSum = curSum - targetSum
+```
+因此每到一个节点，就先统计 `map.get(curSum - targetSum)`，再把当前curSum加入Map，继续遍历左右子树。  
+离开当前节点时，需要撤销当前前缀和，避免影响其他分支。
+```java
+public int pathSum(TreeNode root, int targetSum) {
+    Map<Long, Integer> map = new HashMap<>();
+    map.put(0L, 1);
+    return dfs(root, 0L, targetSum, map);
+}
+
+private int dfs(TreeNode node, long curSum, int targetSum, Map<Long, Integer> map) {
+    if (node == null) return 0;
+
+    curSum += node.val;
+    int count = map.getOrDefault(curSum - targetSum, 0);
+
+    map.put(curSum, map.getOrDefault(curSum, 0) + 1);
+    count += dfs(node.left, curSum, targetSum, map);
+    count += dfs(node.right, curSum, targetSum, map);
+    map.put(curSum, map.get(curSum) - 1);
+
+    return count;
+}
+```
+
+124. 二叉树中的最大路径和
+父节点需要子节点信息（从子节点向上延伸的最大路径和），因此自底向上递归。
+  
+当前节点在路径中有两种可能的身份：
+1.作为路径中间的一部分：向父节点传递最大值。由于路径继续向父节点延伸时不能分叉，因此选择左子树或右子树中的最大一边。  
+2.作为路径的顶点：同时连接左子树、当前节点、右子树，因此需要用额外变量记录答案。  
+```java
+private int ans = Integer.MIN_VALUE;
+
+public int maxPathSum(TreeNode root) {
+    dfs(root);
+    return ans;
+}
+
+private int dfs(TreeNode node) {
+    if (node == null) return 0;
+
+    int left = Math.max(0, dfs(node.left));
+    int right = Math.max(0, dfs(node.right));
+
+    ans = Math.max(ans, node.val + left + right);// 身份2
+
+    return node.val + Math.max(left, right);// 身份1
+}
+```
+
 257. 二叉树的所有路径
 子节点需要父节点信息（路径），因此自顶向下递归。
 ```java
@@ -522,8 +654,6 @@ class Solution {
     }
 }
 ```
-
-
 
 #### 树的属性判断类
 
@@ -787,16 +917,129 @@ private TreeNode build(int preIndex, int begin, int end) {
 ```
 
 
+## 图论
+***399. 除法求值***
+DFS搜索：
+    用 Map<String, List<Pair>> 建图。
+    每个查询 x / y，如果 x 或 y 不存在，返回 -1.0。
+    从 x 开始 DFS/BFS 找 y，沿途把边权相乘。
+    找到 y 时，当前乘积就是答案；找不到返回 -1.0。
+
+并查集：
+普通并查集只维护元素是否属于同一个集合；本题需要维护两个变量之间的倍数关系，因此使用**带权并查集**。  
+`parent[x]` 表示 x 的父节点，`weight[x]` 表示 x / parent[x] 的值。
+经过find函数路径压缩后，`weight[x]` 会更新为 x / root 的值。  
+
+查询 `a / b` 时，如果 a、b 连通，答案为：a / b = (a / root) / (b / root) = weight[a] / weight[b]
+
+```python
+def calcEquation(self, equations, values, queries):
+    parent = {}
+    weight = {}
+
+    def find(x): # 递归寻找根root
+        if parent[x] != x:
+            original_parent = parent[x]
+            root = find(original_parent)
+            # 压缩路径到root
+            weight[x] *= weight[original_parent]
+            parent[x] = root
+
+        return parent[x]
+
+    for (a, b), val in zip(equations, values):
+        if a not in parent:
+            parent[a] = a
+            weight[a] = 1.0
+        if b not in parent:
+            parent[b] = b
+            weight[b] = 1.0
+
+        root_a = find(a)
+        root_b = find(b)
+        if root_a == root_b:
+            continue
+        
+        # 之前不连通的建立连接
+        parent[root_a] = root_b
+        weight[root_a] = val * weight[b] / weight[a]
+
+    ans = []
+
+    for a, b in queries:
+        if a not in parent or b not in parent:
+            ans.append(-1.0)
+            continue
+
+        if find(a) != find(b):
+            ans.append(-1.0)
+        else:
+            ans.append(weight[a] / weight[b])
+
+    return ans
+
+```
+
+***207. 课程表***
+拓扑排序：课程依赖关系可以看成有向图，`[a, b]` 表示学 a 之前必须先学 b，即 `b -> a`。  
+如果图中存在环，就不可能完成所有课程；如果能通过拓扑排序遍历所有课程，则可以完成。
+
+使用入度数组 `indegree` 记录每门课还有多少前置课程未完成。  
+先把入度为 0 的课程加入队列，表示可以直接学习；每学完一门课，就将它指向的后续课程入度减 1。  
+如果某门后续课程入度变为 0，说明它的前置课程都已完成，可以加入队列。
+
+```java
+public boolean canFinish(int numCourses, int[][] prerequisites) {
+    List<List<Integer>> graph = new ArrayList<>();
+    for (int i = 0; i < numCourses; i++) {
+        graph.add(new ArrayList<>());
+    }
+
+    int[] indegree = new int[numCourses];
+    for (int[] p : prerequisites) {
+        int course = p[0];
+        int pre = p[1];
+        graph.get(pre).add(course);
+        indegree[course]++;
+    }
+
+    Queue<Integer> queue = new LinkedList<>();
+    for (int i = 0; i < numCourses; i++) {
+        if (indegree[i] == 0) {
+            queue.offer(i);
+        }
+    }
+
+    int count = 0;
+    while (!queue.isEmpty()) {
+        int cur = queue.poll();
+        count++;
+
+        for (int next : graph.get(cur)) {
+            indegree[next]--;
+            if (indegree[next] == 0) {
+                queue.offer(next);
+            }
+        }
+    }
+
+    return count == numCourses;
+}
+```
+
 ## 动态规划
 动态规划：**将复杂问题分解为更小子问题**。  
 初始状态->子问题->最终状态 遵循相同的原则，因此可以递推。
 
-核心要素：发现复杂问题可以由子问题递推。
-1. 将什么状态定义为dp数组（注意初始化，一般求什么就定义什么）
+> 不用去想复杂状态具体是怎么实现的，因为DP本就不是直接求解，而是一步步递推。
+> 只需要通过一般的状态找出那个通用的状态转移方程，只要方程正确，复杂状态自然可以由初始情况慢慢得到。  
+
+核心要素：发现由子问题递推到复杂问题的**状态转移方程**。
+1. 将什么状态定义为dp数组（一般求什么就定义什么），注意**状态初始化**
 2. 状态转移方程
 3. 遍历顺序
 
-Debug：打印dp数组
+二维DP的上一个状态有三种，左/上/左上。
 
 ### 题目
 ***70.*** 爬楼梯
@@ -830,35 +1073,262 @@ dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
 对于节点数为i（1<=i<=n），选择j(0 <= j <= i-1)为左子树节点数（根节点占一个），此时左子树由j个节点构成，右子树由i-j-1个节点构成。
 因此子问题求解为 dp[i]=sum(dp[j] * dp[i-j-1])，即状态转移方程。
 
+### 打家劫舍
 ***198.*** 打家劫舍
+数组中每个数都大于0，因此不可能连续跳过两个。
 ```java
 int n = nums.length;
-int[] dp = new int[n + 1];
-dp[1] = nums[0];
-for (int i = 3; i <= n; i++) {
-    dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i - 1]);
+int[] dp = new int[n];
+dp[0] = nums[0];
+dp[1] = Math.max(nums[0],nums[1]);
+for (int i = 2; i < n; i++) {
+    dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
 }
 return dp[n];
 ```
 
-#### 背包问题
-状态定义：
-- dp[j]：容量为 j 的背包，所能装下的最大价值
-- dp[j - weight[i]]：容量为 j - weight[i] 的背包，所能装下的最大价值
+337. 打家劫舍Ⅲ
+可能出现连续跳过的情况：  
+比如对于某个节点，左子树的孙子节点收益巨高，而右子树是子节点收益巨高，因此需要连续跳过根节点 和 左子节点。
 
-状态转移：
-- 01背包：每个物品选择一次或不选。  
-- 完全背包：每个物品可选择多次。
+每个节点返回取/不取自己值的两种可能，供上层挑选。
+res0=max(left0,left1)+max(right0,right1)
+res1=node.val+left0+right0
 
-具体类型：
-- 最大价值：dp[j] = Math.max(dp[j], dp[j - cost] + value)
-- 共有几种划分方法：dp[j] += dp[j - cost]
-- 能否划分成功：dp[j] = dp[j] || dp[j - cost]
-- 最多/最少用几个数字：dp[j] = Math.[max/min](dp[j], dp[j - cost] + 1)
+### 买卖股票
+122. 原题允许一天多次买卖，因此只要正收益都直接加上去。
+
+188. 买卖股票的最佳时机 IV
+最多交易k次，用两个数组：
+buy[i]：完成最多 i 次交易时，当天购买股票的最大收益
+sell[i]：完成最多 i 次交易时，当天售卖股票的最大收益
+```python
+def maxProfit(self, k, prices):
+        if not prices:
+            return 0
+
+        buy = [-float("inf")] * (k + 1)
+        sell = [0] * (k + 1)
+
+        for price in prices:
+            for i in range(1, k + 1):
+                buy[i] = max(buy[i], sell[i - 1] - price) # 之前price的第i次持有收益，当前price下买入后的持有收益
+                sell[i] = max(sell[i], buy[i] + price)
+
+        return sell[k]
+```
+对于[1,2,3,0,4],前三天buy[1]、buy[2]相同，一次和两次的交易最终结果一样，没有必要进行第二次交易。
+
+***309. 买卖股票的最佳时机含冷冻期***
+分解成子问题：每天只根据前一天处理当天三个状态的最大值
+三个状态不是说「同一天同时进行三种操作」，而是给出当天的全部三种可能性，是给后续转移使用的候选状态。  
+
+状态转移：由于必须在再次购买前出售掉之前的股票，可得  
+- 当天要买，则有两种来源：继承之前持有还没买/昨天是rest，扣除今天price
+- 当天要卖，来源是之前持有的+当天price
+- 当天休息，则要么刚卖完在冷冻/要么昨天也在休息
+```python
+def maxProfit(self, prices):
+        buy = -prices[0]# **不是说第一天必须买，是候选状态**
+        sold = 0
+        rest = 0
+
+        for price in prices[1:]:
+            prev_buy = buy
+            prev_sold = sold
+            prev_rest = rest
+
+            buy = max(prev_buy, prev_rest - price)
+            sold = prev_buy + price
+            rest = max(prev_rest, prev_sold)
+
+        return max(sold, rest)
+```
+
+### 字符串编辑
+72. 编辑距离
+用 D[i][j] 表示 A 的前 i 个字母和 B 的前 j 个字母之间的编辑距离。  
+转移方程：如果A B新遍历到的字母相同，则最后一项+0；不同则+1
+```python
+def minDistance(self, word1: str, word2: str) -> int:
+    m, n = len(word1), len(word2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    # 这里为什么是n+1，m+1？
+    # 因为dp的i、j表示的是前几个字符，对应字符串下标i-1 j-1
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if word1[i - 1] == word2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = min(
+                    dp[i - 1][j],      # 删除
+                    dp[i][j - 1],      # 插入
+                    dp[i - 1][j - 1]   # 替换
+                ) + 1
+
+    return dp[m][n]
+```
+
+1143. 最长公共子序列
+text1 = "abcde", text2 = "ace" ；输出：3 
+经典二维DP。  
+dp[i][j]:text1 前 i 个字符 和 text2 前 j 个字符的最长公共子序列长度。  
+转移方程：如果A B新遍历到的字母相同，则最后一项+1；不同则不加。
+```python
+def longestCommonSubsequence(self, text1, text2):
+    m, n = len(text1), len(text2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if text1[i - 1] == text2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+    return dp[m][n]
+```
+
+115. 不同的子序列  
+s = "babgbag", t = "bag"；输出不同组合种数：5
+不需要考虑最终具体怎么组合（即使是答案要输出子序列），只需要考虑每一步状态，然后遍历过去。
+
+dp[i][j]：s 前 i 个字符中，能组成 t 前 j 个字符的不同子序列个数  
+
+转移方程中的项：s[i - 1] == t[j - 1]，则当前字符有用；如果不相等，则该字符是要被删去的，不用。  
+- dp[i - 1][j - 1]：用上当前字符
+- dp[i - 1][j]：不用当前字符
+
+为什么相等时DP是两个相加：当前字符可以选择“用”或“不用”。用当前字符时，方案数来自 dp[i-1][j-1]；不用当前字符时，方案数来自 dp[i-1][j]。  
+因为“用当前字符”和“不用当前字符”是互斥的两类方案，不会重复计数；而题目要求的是方案总数，所以可以把两类方案数相加。
+```python
+def numDistinct(self, s, t):
+    m, n = len(s), len(t)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(m + 1):# 都包含一个空串
+        dp[i][0] = 1
+
+    # dp的i、j表示的是前几个字符，对应字符串下标i-1 j-1
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if s[i - 1] == t[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j]
+            else:
+                dp[i][j] = dp[i - 1][j]
+
+    return dp[m][n]
+```
+
+647. 回文子串
+动归法：通过boolean dp[i][j]记录i-j之间是否为回文串，但空间复杂度是N^2.  
+状态转移：if (s.charAt(i) == s.charAt(j) && (i - j < 2 || dp[i + 1][j - 1])) {dp[i][j] = true;}
+- i - j < 2 表示当前为中心（i-j是1个或2个字符）
+- dp[i + 1][j - 1] 表示范围更小的子串是回文串
+
+中心扩展法：分别以单个字符和两个字符为中心。
+```java
+class Solution {
+    public int countSubstrings(String s) {
+        int ans = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            ans += expand(s, i, i);
+            ans += expand(s, i, i + 1);
+        }
+
+        return ans;
+    }
+
+    private int expand(String s, int left, int right) {
+        int count = 0;
+
+        while (left >= 0 && right < s.length()
+                && s.charAt(left) == s.charAt(right)) {
+            count++;
+            left--;
+            right++;
+        }
+
+        return count;
+    }
+}
+
+```
+
+### 区间DP
+区间DP适用于：一次选择会把问题拆成左右两个区间，且当前选择的收益依赖区间边界。  
+这类问题通常不能直接贪心，因为当前局部最优会改变后续的相邻关系，**局部收益无法独立决定全局最优**。
+
+***312. 戳气球***
+不能用贪心：如果每次选择当前收益最大的气球，戳破后它左右两边会变成新的相邻元素，后续收益被当前选择改变。  
+因此不能只看“当前戳哪个最赚”，而要枚举某个区间里**最后一个被戳破的气球**。
+
+DP定义为开区间(i, j)内的最大收益。
+在区间 `(i, j)` 中，假设最后戳破的气球是 `k`，那么最后 `k` 左右相邻的一定是边界 `i` 和 `j`，收益确定为：
+```text
+dp[i][j] = max(dp[i][k] + dp[k][j] + points[i] * points[k] * points[j])
+```
+
+```java
+public int maxCoins(int[] nums) {
+    int n = nums.length;
+    int[] points = new int[n + 2];
+    points[0] = 1;
+    points[n + 1] = 1;
+    for (int i = 0; i < n; i++) {
+        points[i + 1] = nums[i];
+    }
+
+    int[][] dp = new int[n + 2][n + 2];
+
+    for (int len = 2; len <= n + 1; len++) {
+        for (int left = 0; left + len <= n + 1; left++) {
+            int right = left + len;
+            for (int k = left + 1; k < right; k++) {// 注意从left+1不是left开始
+                dp[left][right] = Math.max(
+                    dp[left][right],
+                    dp[left][k] + dp[k][right] + points[left] * points[k] * points[right]
+                );
+            }
+        }
+    }
+
+    return dp[0][n + 1];
+}
+```
+
+### 背包问题
+背包问题先判断**物品是否可以重复选择**，再判断 `dp` 表示什么含义。
+
+- 01背包：每个物品只能选一次，容量遍历必须倒序，避免同一个物品被重复使用。
+- 完全背包：每个物品可以选多次，容量遍历通常正序，让当前物品可以继续参与后续状态。
+- 多维费用背包：限制不止一个，例如同时限制 0 的个数和 1 的个数。
+
+一维 DP 中，倒序是为了防止当前物品被重复使用；正序是为了允许当前物品被重复使用。因此遍历顺序**完全背包从小到大，01背包从大到小**。
+> 为什么？下面正序遍历的例子中：
+    dp[2] = dp[0] + value
+    dp[4] = dp[2] + value
+    dp[4] 用到了刚更新的 dp[2]，等于同一个物品用了两次。
+
+`dp[j]` 的常见含义：
+- 最大价值-max：`dp[j] = Math.max(dp[j], dp[j - cost] + value)`
+- 最少数量-min：`dp[j] = Math.min(dp[j], dp[j - cost] + 1)`
+- 是否可达-bool：`dp[j] = dp[j] || dp[j - cost]`
+- 方案数量-累加：`dp[j] += dp[j - cost]`
+
+
+#### 01背包
+每个物品只能选一次，内层容量倒序。
 
 **最大价值问题**
 ```java
-// M 种研究材料，costs[i]，values[i];背包总空间为 N
+// M 种材料，costs[i]，values[i];背包总空间为 N
 int[] dp = new int[N + 1];
 for (int i = 0; i < M; i++) {
     // 内层循环j--。同746题，遍历顺序!=最终路径 
@@ -870,10 +1340,11 @@ for (int i = 0; i < M; i++) {
 return dp[N];
 ```
 
-**划分成功问题**
+**是否可达**
 ***416.*** 分割等和子集
 [1,5,11,5] -> true  
-背包容量 sum/2，物品为 nums 数组。
+转化为 01背包：能否从 nums 中选出若干个数，使其和为 `sum / 2`。  
+背包容量为 `sum / 2`，物品重量为 `num`，`dp[j]` 表示容量 j 是否可以被凑出。
 ```java
 if (sum % 2 != 0) { return false; }
 int target = sum/2;
@@ -887,8 +1358,95 @@ for (int num : nums) {
 return dp[target];
 ```
 
-**多维背包：**
- ***474.*** 一和零
+**方案数量**
+***494. 目标和***
+给 nums 中每个数添加 `+` 或 `-`，使表达式结果等于 target。  
+设正数集合和为 `pos`，负数集合和为 `neg`：
+```text
+pos - neg = target
+pos + neg = sum
+pos = (sum + target) / 2
+```
+**问题转化为：从 nums 中选出若干个数，使其和为 `pos`，一共有多少种选法。**  
+`dp[j]` 表示凑出和 j 的方案数。
+```java
+public int findTargetSumWays(int[] nums, int target) {
+    int sum = 0;
+    for (int num : nums) {
+        sum += num;
+    }
+
+    if (Math.abs(target) > sum || (sum + target) % 2 != 0) {
+        return 0;
+    }
+
+    int pos = (sum + target) / 2;
+    int[] dp = new int[pos + 1];
+    dp[0] = 1;
+
+    for (int num : nums) {
+        for (int j = pos; j >= num; j--) {
+            dp[j] += dp[j - num];
+        }
+    }
+
+    return dp[pos];
+}
+```
+
+#### 完全背包
+每个物品可以重复选择，内层容量正序。
+
+***322. 零钱兑换***
+给定硬币面额 coins 和总金额 amount，求凑成 amount 所需的最少硬币数。  
+`dp[j]` 表示凑成金额 j 所需的最少硬币数。
+```java
+public int coinChange(int[] coins, int amount) {
+    int max = amount + 1;
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, max);
+    dp[0] = 0;
+
+    for (int coin : coins) {
+        for (int j = coin; j <= amount; j++) {
+            dp[j] = Math.min(dp[j], dp[j - coin] + 1);
+        }
+    }
+
+    return dp[amount] == max ? -1 : dp[amount];
+}
+```
+
+#### 多维费用背包
+***474. 一和零***
+每个字符串只能选一次，因此仍然是 01背包；但每个物品有两个费用：0 的个数和 1 的个数。  
+`dp[i][j]` 表示最多使用 i 个 0、j 个 1 时，能选出的字符串最大数量。  
+由于每个字符串只能选一次，两个容量都要倒序遍历。
+```java
+public int findMaxForm(String[] strs, int m, int n) {
+    int[][] dp = new int[m + 1][n + 1];
+
+    for (String str : strs) {
+        int zero = 0;
+        int one = 0;
+        for (char c : str.toCharArray()) {
+            if (c == '0') {
+                zero++;
+            } else {
+                one++;
+            }
+        }
+
+        for (int i = m; i >= zero; i--) {
+            for (int j = n; j >= one; j--) {
+                dp[i][j] = Math.max(dp[i][j], dp[i - zero][j - one] + 1);
+            }
+        }
+    }
+
+    return dp[m][n];
+}
+```
 
 ## 贪心算法
 134. 加油站
@@ -933,6 +1491,40 @@ public int jump(int[] nums) {
     return cnt;
 }
 ```
+
+300. 最长递增子序列
+贪心+二分，同一长度下让子序列末尾值尽可能小（通过替换实现）
+
+具体实现：遍历 nums 中的每个数 x
+- 如果 x 比所有结尾都大，追加到 tails
+- 否则用二分找到第一个 >= x 的位置并替换它
+```java
+public int lengthOfLIS(int[] nums) {
+    int[] tails = new int[nums.length];
+    int size = 0;
+    // tail[k]表示长度k+1的子序列末位值
+    // tails 列表一定是严格递增的
+    for (int num : nums) {
+        int left = 0;
+        int right = size;
+
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+
+            if (tails[mid] < num) {left = mid + 1;
+            } else {right = mid;}
+        }
+        tails[left] = num;
+
+        if (left == size) {size++;}
+    }
+
+    return size;
+}
+```
+例：[10,9,2,5,3]，第一轮遍历10进入tails，并size++；
+第二轮9替换了tails[0]的10；第三轮2替换了9；
+第四轮5加到tails[1]；第五轮3替换5。
 
 738. 单调递增的数字
 如果不递增，则将该位开始的低位设为9并借位减一。
@@ -1198,6 +1790,43 @@ private void backtrack(int[] nums, int start, List<Integer> path, List<List<Inte
     }
 }
 ```
+
+***301. 删除无效的括号***
+字符串 + DFS/回溯 + 剪枝：双向扫描只是发现多余左右括号的方式，核心仍是在候选位置中尝试删除一个括号并递归。  
+从左到右处理多余的右括号，反转字符串后再用同样逻辑处理多余的左括号；跳过连续重复括号可以避免生成重复结果。
+```python
+class Solution:
+    def removeInvalidParentheses(self, s: str) -> List[str]:
+        res = []
+        self.solve(s, res, 0, 0, '(', ')')
+        return res
+
+    def solve(self, s: str, res: List[str], last_i: int, last_j: int,
+              open_ch: str, close_ch: str) -> None:
+        balance = 0
+
+        for i in range(last_i, len(s)):
+            if s[i] == open_ch:
+                balance += 1
+            elif s[i] == close_ch:
+                balance -= 1
+
+            if balance < 0:
+                for j in range(last_j, i + 1):
+                    if s[j] == close_ch and (j == last_j or s[j - 1] != close_ch):
+                        new_s = s[:j] + s[j + 1:]
+                        self.solve(new_s, res, i, j, open_ch, close_ch)
+
+                return
+
+        reversed_s = s[::-1]
+
+        if open_ch == '(':
+            self.solve(reversed_s, res, 0, 0, close_ch, open_ch)
+        else:
+            res.append(reversed_s)
+```
+
 ## 单调栈/队列
 适用于需要**找到第一个满足条件的元素**的题目。 
 
